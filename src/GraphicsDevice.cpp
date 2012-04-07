@@ -142,10 +142,6 @@ GraphicsDevice::GraphicsDevice(HWND hwnd)
     };
     m_viewport = viewport;
     m_context->RSSetViewports(1, &m_viewport);
-
-    m_lineRenderer.reset(new LineRenderer(*this));
-    m_skyRenderer.reset(new SkyRenderer(*this));
-    m_voxelRenderer.reset(new VoxelRenderer(*this));
 }
 
 GraphicsDevice::~GraphicsDevice()

@@ -58,21 +58,6 @@ public:
     //
     ID3D10Include& GetD3DInclude();
 
-    //
-    //  Returns the line renderer instance.
-    //
-    LineRenderer& GetLineRenderer();
-
-    //
-    //  Returns the sky renderer instance.
-    //
-    SkyRenderer& GetSkyRenderer();
-
-    //
-    //  Returns the voxel renderer instance.
-    //
-    VoxelRenderer& GetVoxelRenderer();
-
 private:
     //
     //  Properties.
@@ -86,9 +71,6 @@ private:
     boost::intrusive_ptr<ID3D11DepthStencilView> m_depthStencilView;
     D3D_FEATURE_LEVEL m_featureLevel;
     D3D11_VIEWPORT m_viewport;
-    std::unique_ptr<LineRenderer> m_lineRenderer;
-    std::unique_ptr<SkyRenderer> m_skyRenderer;
-    std::unique_ptr<VoxelRenderer> m_voxelRenderer;
 };
 
 inline ID3D11Device& GraphicsDevice::GetD3DDevice()
@@ -101,24 +83,6 @@ inline ID3D11DeviceContext& GraphicsDevice::GetD3DContext()
 {
     assert(m_context);
     return *m_context;
-}
-
-inline LineRenderer& GraphicsDevice::GetLineRenderer()
-{
-    assert(m_lineRenderer);
-    return *m_lineRenderer;
-}
-
-inline SkyRenderer& GraphicsDevice::GetSkyRenderer()
-{
-    assert(m_skyRenderer);
-    return *m_skyRenderer;
-}
-
-inline VoxelRenderer& GraphicsDevice::GetVoxelRenderer()
-{
-    assert(m_voxelRenderer);
-    return *m_voxelRenderer;
 }
 
 #endif  // __NYX_GRAPHICSDEVICE_H__

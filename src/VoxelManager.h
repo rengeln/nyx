@@ -46,19 +46,22 @@ public:
     void Update();
 
     //
-    //  Updates the node tree based on the camera's position.
+    //  Updates the node tree based on a camera position.
     //
     void SetCamera(const Camera& camea);
 
     //
     //  Draws the voxel world.
     //
-    void Draw();
+    //  This doesn't need to be the same camera that SetCamera() was called
+    //  with, although if it is very far away then artifacts will likely result.
+    //
+    void Draw(const Camera& camera);
 
     //
     //  Draws the voxel bounding boxes.
     //
-    void DrawBoundingBoxes();
+    void DrawBoundingBoxes(const Camera& camera);
 
     //
     //  Processes pending nodes.
@@ -97,7 +100,12 @@ private:
     //
     //  Updates an individual node.
     //
-    void UpdateNode(Node& node, const Camera& camera, bool isParentVisible);
+    void UpdateNode(Node& node, const Camera& camera);
+
+    //
+    //  Calculates a node's visibility.
+    //
+    void CalculateNodeVisibility(Node& node, const Camera& camera);
 
     //
     //  Splits a node.
@@ -135,6 +143,8 @@ private:
     //
     static const size_t MaxTreeDepth = 8;
     GraphicsDevice& m_graphicsDevice;
+    std::unique_ptr<VoxelRenderer> m_voxelRenderer;
+    std::unique_ptr<LineRenderer> m_lineRenderer;
     uint3 m_cellsPerNode;
     size_t m_treeDepth;
     float m_radius;

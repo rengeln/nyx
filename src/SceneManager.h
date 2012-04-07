@@ -12,6 +12,7 @@
 //  Forward declarations.
 //
 class GraphicsDevice;
+class SkyRenderer;
 class VoxelManager;
 
 class SceneManager : public boost::noncopyable
@@ -57,6 +58,7 @@ private:
     //
     GraphicsDevice& m_graphicsDevice;
     std::unique_ptr<VoxelManager> m_voxelManager;
+    std::unique_ptr<SkyRenderer> m_skyRenderer;
     Camera m_camera;
 };
 

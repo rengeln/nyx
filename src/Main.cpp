@@ -163,19 +163,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 position += camera.GetRightVector() * (speed * ticks);
             }
             camera.SetPosition(position);
-            sceneManager.SetCamera(camera);
             sceneManager.Update();
+            sceneManager.SetCamera(camera);
 
-            graphicsDevice.GetSkyRenderer().SetCamera(camera);
-            graphicsDevice.GetLineRenderer().SetCamera(camera);
-            graphicsDevice.GetVoxelRenderer().SetCamera(camera);
             graphicsDevice.Begin();
-            graphicsDevice.GetSkyRenderer().Draw();
             sceneManager.Draw();
 
             if (showGrid)
             {
-                sceneManager.GetVoxelManager().DrawBoundingBoxes();
+                sceneManager.GetVoxelManager().DrawBoundingBoxes(camera);
             }
             graphicsDevice.End();
         }

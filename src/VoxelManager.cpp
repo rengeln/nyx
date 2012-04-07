@@ -23,6 +23,9 @@ VoxelManager::VoxelManager(GraphicsDevice& graphicsDevice,
 {
     assert(m_treeDepth <= MaxTreeDepth);
 
+    m_voxelRenderer.reset(new VoxelRenderer(m_graphicsDevice));
+    m_lineRenderer.reset(new LineRenderer(m_graphicsDevice));
+
     std::fill(m_nodeDimensions.begin(), m_nodeDimensions.end(), float3::Replicate(-1.0f));
     std::fill(m_splitDistances.begin(), m_splitDistances.end(), -1.0f);
     std::fill(m_unsplitDistances.begin(), m_unsplitDistances.end(), -1.0f);
@@ -95,7 +98,7 @@ void VoxelManager::SetCamera(const Camera& camera)
 
     for (auto i = m_nodeMap.begin(); i != m_nodeMap.end(); ++i)
     {
-        UpdateNode(*i->second, camera, true);
+        UpdateNode(*i->second, camera);
     }
 
     profiler.End();
@@ -109,27 +112,31 @@ void VoxelManager::Update()
     profiler.End();
 }
 
-void VoxelManager::Draw()
+void VoxelManager::Draw(const Camera& camera)
 {
     static Profiler profiler("VoxelManager::Draw()");
     profiler.Begin();
+    m_voxelRenderer->SetCamera(camera);
     for (auto i = m_nodeMap.begin(); i != m_nodeMap.end(); i++)
     {
+        CalculateNodeVisibility(*i->second, camera);
         DrawNode(*i->second);
     }
-    m_graphicsDevice.GetVoxelRenderer().Flush();
+    m_voxelRenderer->Flush();
     profiler.End();
 }
 
-void VoxelManager::DrawBoundingBoxes()
+void VoxelManager::DrawBoundingBoxes(const Camera& camera)
 {
     static Profiler profiler("VoxelManager::DrawBoundingBoxes()");
     profiler.Begin();
+    m_lineRenderer->SetCamera(camera);
     for (auto i = m_nodeMap.begin(); i != m_nodeMap.end(); i++)
     {
+        CalculateNodeVisibility(*i->second, camera);
         DrawNodeBoundingBox(*i->second);
     }
-    m_graphicsDevice.GetLineRenderer().Flush();
+    m_lineRenderer->Flush();
     profiler.End();
 }
 
@@ -227,8 +234,7 @@ std::shared_ptr<VoxelManager::Node> VoxelManager::CreateNode(uint64_t id,
 }
 
 void VoxelManager::UpdateNode(Node& node,
-                              const Camera& camera,
-                              bool isParentVisible)
+                              const Camera& camera)
 {
     float3 cpos = camera.GetPosition();
     float3 center = node.position + (node.size * 0.5f);
@@ -270,17 +276,17 @@ void VoxelManager::UpdateNode(Node& node,
         node.alpha = min(1.0f, max(0.0f, frac / (m_splitDistances[node.depth - 1] - 
                                                  m_fadeOutStartDistances[node.depth - 1])));
     }
-    
+}
 
+void VoxelManager::CalculateNodeVisibility(Node& node, const Camera& camera)
+{
     box3f boundingBox(node.position, node.position + node.size);
-    node.visible = isParentVisible &&
-                   camera.Intersects(boundingBox);
-
-    if (node.children[0])
+    node.visible = camera.Intersects(boundingBox);
+    if (node.visible && node.children[0])
     {
         for (size_t i = 0; i < 8; i++)
         {
-            UpdateNode(*node.children[i], camera, node.visible);
+            CalculateNodeVisibility(*node.children[i], camera);
         }
     }
 }
@@ -291,22 +297,22 @@ void VoxelManager::DrawNode(Node& node)
     {
         if (node.alpha == 1.0f)
         {
-            m_graphicsDevice.GetVoxelRenderer().Draw(*node.geometry,
-                                                     node.position);
+            m_voxelRenderer->Draw(*node.geometry,
+                                  node.position);
         }
         else if (node.alpha > 0)
         {
-            m_graphicsDevice.GetVoxelRenderer().DrawTransparent(*node.geometry,
-                                                                node.position,
-                                                                node.alpha);
+            m_voxelRenderer->DrawTransparent(*node.geometry,
+                                             node.position,
+                                             node.alpha);
         }
         
         if (node.children[0])
         {
             if (!node.children[0]->children[0] && node.alpha < 1.0f)
             {
-                m_graphicsDevice.GetVoxelRenderer().DrawGapFiller(*node.geometry,
-                                                                  node.position);
+                m_voxelRenderer->DrawGapFiller(*node.geometry,
+                                                node.position);
             }
             for (size_t i = 0; i < 8; ++i)
             {
@@ -344,7 +350,7 @@ void VoxelManager::DrawNodeBoundingBox(Node& node)
             }
 
             box3f box(node.position, node.position + node.size);
-            m_graphicsDevice.GetLineRenderer().DrawBox(box, color);
+            m_lineRenderer->DrawBox(box, color);
         }
     }
 }
