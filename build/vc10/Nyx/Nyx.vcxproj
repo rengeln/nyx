@@ -94,6 +94,7 @@
     <ClInclude Include="..\..\..\src\Noise.h" />
     <ClInclude Include="..\..\..\src\Prefix.h" />
     <ClInclude Include="..\..\..\src\Profiler.h" />
+    <ClInclude Include="..\..\..\src\SceneManager.h" />
     <ClInclude Include="..\..\..\src\SkyRenderer.h" />
     <ClInclude Include="..\..\..\src\Vector.h" />
     <ClInclude Include="..\..\..\src\VoxelMesh.h" />
@@ -113,6 +114,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\..\src\Profiler.cpp" />
+    <ClCompile Include="..\..\..\src\SceneManager.cpp" />
     <ClCompile Include="..\..\..\src\SkyRenderer.cpp" />
     <ClCompile Include="..\..\..\src\VoxelMesh.cpp" />
     <ClCompile Include="..\..\..\src\VoxelManager.cpp" />

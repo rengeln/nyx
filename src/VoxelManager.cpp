@@ -59,9 +59,9 @@ VoxelManager::~VoxelManager()
 {
 }
 
-void VoxelManager::Update(const Camera& camera)
+void VoxelManager::SetCamera(const Camera& camera)
 {
-    static Profiler profiler("VoxelManager::Update()");
+    static Profiler profiler("VoxelManager::SetCamera()");
     profiler.Begin();
 
     //  Translate the camera's position into top-level node indices
@@ -98,6 +98,14 @@ void VoxelManager::Update(const Camera& camera)
         UpdateNode(*i->second, camera, true);
     }
 
+    profiler.End();
+}
+
+void VoxelManager::Update()
+{
+    static Profiler profiler("VoxelManager::Update()");
+    profiler.Begin();
+    ProcessNodes();
     profiler.End();
 }
 

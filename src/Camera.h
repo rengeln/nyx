@@ -6,7 +6,7 @@
 #ifndef __NYX_CAMERA_H__
 #define __NYX_CAMERA_H__
 
-class Camera : public boost::noncopyable {
+class Camera {
 public:
     //
     //  Constructor.

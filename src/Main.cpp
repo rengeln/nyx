@@ -11,6 +11,7 @@
 #include "SkyRenderer.h"
 #include "VoxelManager.h"
 #include "VoxelRenderer.h"
+#include "SceneManager.h"
 
 const TCHAR* WindowClass = _T("Nyx");
 const TCHAR* WindowName = _T("Nyx");
@@ -77,6 +78,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         ShowWindow(hwnd, SW_SHOW);
 
         GraphicsDevice graphicsDevice(hwnd);
+        SceneManager sceneManager(graphicsDevice);
 
         uint64_t lastTime, curTime, elapsedTime, pcFreq;
         const float TicksPerSecond = 60.0f;
@@ -98,11 +100,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                                                                     8000.0f);
         camera.SetProjectionMatrix(projectionMatrix);
         camera.SetPosition(position);
-
-        VoxelManager manager(graphicsDevice,
-                             4,
-                             float3(640, 640.0f, 640.0f),
-                             4800.0f);
 
         bool showGrid = false;
 
@@ -166,18 +163,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 position += camera.GetRightVector() * (speed * ticks);
             }
             camera.SetPosition(position);
-            manager.Update(camera);
-            manager.ProcessNodes();
+            sceneManager.SetCamera(camera);
+            sceneManager.Update();
 
             graphicsDevice.GetSkyRenderer().SetCamera(camera);
             graphicsDevice.GetLineRenderer().SetCamera(camera);
             graphicsDevice.GetVoxelRenderer().SetCamera(camera);
             graphicsDevice.Begin();
             graphicsDevice.GetSkyRenderer().Draw();
-            manager.Draw();
+            sceneManager.Draw();
+
             if (showGrid)
             {
-                manager.DrawBoundingBoxes();
+                sceneManager.GetVoxelManager().DrawBoundingBoxes();
             }
             graphicsDevice.End();
         }

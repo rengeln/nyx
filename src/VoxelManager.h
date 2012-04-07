@@ -41,9 +41,14 @@ public:
     ~VoxelManager();
 
     //
+    //  Updates the simulation.
+    //
+    void Update();
+
+    //
     //  Updates the node tree based on the camera's position.
     //
-    void Update(const Camera& camea);
+    void SetCamera(const Camera& camea);
 
     //
     //  Draws the voxel world.
