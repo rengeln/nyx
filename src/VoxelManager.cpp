@@ -110,20 +110,21 @@ void VoxelManager::SetCamera(const Camera& camera)
                             m_nodeMap[nodeId] = node;
                             ProcessNode(node);
                         }
-                        //OutputDebugStringA("good\n");
-                    }
-                    else
-                    {
-                        //OutputDebugStringA("bad\n");
                     }
                 }
             }
         }
     }
 
-    for (auto i = m_nodeMap.begin(); i != m_nodeMap.end(); ++i)
+    for (auto i = m_nodeMap.begin(); i != m_nodeMap.end();)
     {
-        UpdateNode(*i->second, camera);
+        auto j = i++;
+        UpdateNode(*j->second, camera);
+        if (j->second->distance > (m_radius * 1.25f))
+        {
+            OutputDebugStringA("Deleting node!!!\n");
+            m_nodeMap.erase(j);
+        }
     }
 
     profiler.End();
@@ -209,10 +210,6 @@ void VoxelManager::ProcessNodes()
             break;
         }
 
-        char buf[64];
-        sprintf_s(buf, "Using processor %d\n", processor);
-        OutputDebugStringA(buf);
-        
         m_voxelProcessorArray[processor]->Process(node->geometry,
                                                   node->position,
                                                   node->size,
