@@ -36,14 +36,14 @@ Output main(Input input)
                              0,
                              simplex_noise(pos / 353.921));
     float3 mtn_pos = pos2D + mtn_warp * 64.0f;
-    float mntn = simplex_noise_range(mtn_pos / 4731.1f, -0.2f, 1.0f);
+    float mntn = simplex_noise_range(mtn_pos / 3131.1f, -0.2f, 1.0f);
     float elev = simplex_noise_range(mtn_pos / 1213.0f, 0.0f, 1.0f);
     float disp = simplex_noise_range(mtn_pos / 637.0f, 0.0f, 1.0f);
     float height = 200.0f + ((mntn * (elev * elev)) * 1200.0f) + ((disp * disp) * 200.0f);
 
     float rough = min(simplex_noise_range(pos / 327.0f, 0.1f, 1.0f), elev);
-    float dirt = rough;
     rough = pow(rough, 2.3f);
+    float dirt = rough;
 
     float3 warp = float3(simplex_noise(pos / 27.758),
                          simplex_noise(pos / 29.572),
@@ -62,8 +62,8 @@ Output main(Input input)
     output.density = density; //sign(density);   //  sign(density);
 
     //  Calculate the material
-    float grass = 1.0f - rough;
-    float light_factor = simplex_noise_range(pos / 63.0f, 0.0f, 1.0f);
+    float grass = 1.0f - dirt;
+    float light_factor = simplex_noise_range(pos / 273.0f, 0.0f, 1.0f);
     float4 mat1 = float4(0, grass * light_factor, grass - (grass * light_factor), dirt);
     float4 mat2 = float4(0, 0, 0, 0);
     
