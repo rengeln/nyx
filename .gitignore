@@ -1,0 +1,7 @@
+ipch/
+debug/
+release/
+*.sdf
+*.opensdf
+*.user
+bin/

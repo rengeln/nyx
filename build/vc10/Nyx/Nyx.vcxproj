@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{522FA336-CE73-47B3-BCB6-883E103A67D2}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Nyx</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)..\..\bin\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)-$(Platform)-$(Configuration)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)..\..\bin\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)-$(Platform)-$(Configuration)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>Prefix.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>freetype246_D.lib;d3d11.lib;d3dx11.lib;dxgi.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>Prefix.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>freetype246.lib;d3d11.lib;d3dx11.lib;dxgi.lib;dxerr.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\assets\shaders\marching_cubes.h" />
+    <ClInclude Include="..\..\..\assets\shaders\simplex_noise.h" />
+    <ClInclude Include="..\..\..\assets\shaders\voxel_mesh.h" />
+    <ClInclude Include="..\..\..\src\Camera.h" />
+    <ClInclude Include="..\..\..\src\Font.h" />
+    <ClInclude Include="..\..\..\src\GraphicsDevice.h" />
+    <ClInclude Include="..\..\..\src\LineRenderer.h" />
+    <ClInclude Include="..\..\..\src\MarchingCubes.inl" />
+    <ClInclude Include="..\..\..\src\Matrix.h" />
+    <ClInclude Include="..\..\..\src\Noise.h" />
+    <ClInclude Include="..\..\..\src\Prefix.h" />
+    <ClInclude Include="..\..\..\src\Profiler.h" />
+    <ClInclude Include="..\..\..\src\SkyRenderer.h" />
+    <ClInclude Include="..\..\..\src\Vector.h" />
+    <ClInclude Include="..\..\..\src\VoxelGeometry.h" />
+    <ClInclude Include="..\..\..\src\VoxelManager.h" />
+    <ClInclude Include="..\..\..\src\VoxelProcessor.h" />
+    <ClInclude Include="..\..\..\src\VoxelRenderer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\Camera.cpp" />
+    <ClCompile Include="..\..\..\src\Font.cpp" />
+    <ClCompile Include="..\..\..\src\GraphicsDevice.cpp" />
+    <ClCompile Include="..\..\..\src\LineRenderer.cpp" />
+    <ClCompile Include="..\..\..\src\Main.cpp" />
+    <ClCompile Include="..\..\..\src\Noise.cpp" />
+    <ClCompile Include="..\..\..\src\Prefix.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Profiler.cpp" />
+    <ClCompile Include="..\..\..\src\SkyRenderer.cpp" />
+    <ClCompile Include="..\..\..\src\VoxelGeometry.cpp" />
+    <ClCompile Include="..\..\..\src\VoxelManager.cpp" />
+    <ClCompile Include="..\..\..\src\VoxelProcessor.cpp" />
+    <ClCompile Include="..\..\..\src\VoxelRenderer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\assets\shaders\line_ps.hlsl" />
+    <None Include="..\..\..\assets\shaders\line_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_gen_indices_gs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_gen_indices_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_gen_vertices_gs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_gen_vertices_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_list_cells_gs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_list_cells_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_list_vertices_gs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_list_vertices_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_splat_vertices_ps.hlsl" />
+    <None Include="..\..\..\assets\shaders\marching_cubes_splat_vertices_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\skybox_ps.hlsl" />
+    <None Include="..\..\..\assets\shaders\skybox_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\voxel_generator_gs.hlsl" />
+    <None Include="..\..\..\assets\shaders\voxel_generator_ps.hlsl" />
+    <None Include="..\..\..\assets\shaders\voxel_generator_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\voxel_mesh_ps.hlsl" />
+    <None Include="..\..\..\assets\shaders\voxel_mesh_vs.hlsl" />
+    <None Include="..\..\..\Planning.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
