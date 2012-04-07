@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Shader Files">
       <UniqueIdentifier>{fb9e1d1d-419c-4653-b5ed-2e7ac8706c20}</UniqueIdentifier>
     </Filter>
@@ -51,9 +47,6 @@
     <ClInclude Include="..\..\..\assets\shaders\simplex_noise.h">
       <Filter>Shader Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\VoxelGeometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\LineRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -70,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\MarchingCubes.inl">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\VoxelMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -104,13 +100,13 @@
     <ClCompile Include="..\..\..\src\SkyRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\VoxelGeometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\LineRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\VoxelMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -166,7 +162,6 @@
     <None Include="..\..\..\assets\shaders\line_ps.hlsl">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="..\..\..\Planning.txt" />
     <None Include="..\..\..\assets\shaders\voxel_mesh_vs.hlsl">
       <Filter>Shader Files</Filter>
     </None>

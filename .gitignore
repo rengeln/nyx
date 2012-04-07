@@ -1,7 +1,10 @@
-ipch/
-debug/
-release/
+*.suo
 *.sdf
 *.opensdf
 *.user
+Win32/
+x64/
+ipch/
+Debug/
+Release/
 bin/

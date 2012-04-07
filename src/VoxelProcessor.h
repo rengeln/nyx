@@ -11,7 +11,7 @@
 //
 class GraphicsDevice;
 class VoxelManager;
-class VoxelGeometry;
+class VoxelMesh;
 
 class VoxelProcessor : public boost::noncopyable
 {
@@ -41,7 +41,7 @@ public:
     //      [in] size
     //          Size of the chunk.
     //
-    void Process(std::shared_ptr<VoxelGeometry> geometry,
+    void Process(std::shared_ptr<VoxelMesh> geometry,
                  float3 position,
                  float3 size,
                  size_t depth);
@@ -166,7 +166,7 @@ private:
 	size_t m_indexCount;
     bool m_verticesAreReady;
     bool m_indicesAreReady;
-    std::shared_ptr<VoxelGeometry> m_geometryPtr;
+    std::shared_ptr<VoxelMesh> m_geometryPtr;
 
     boost::intrusive_ptr<ID3D11Buffer> m_cellMarkerBuffer;
     boost::intrusive_ptr<ID3D11Buffer> m_vertexMarkerBuffer;

@@ -11,7 +11,7 @@
 //
 class Camera;
 class GraphicsDevice;
-class VoxelGeometry;
+class VoxelMesh;
 
 //
 //  Implements the voxel mesh renderer.
@@ -44,9 +44,9 @@ public:
     //  In reality these functions enqueue the meshes for drawing, which occurs
     //  when Flush() is called.
     //
-    void Draw(const VoxelGeometry& geometry, float3 position);
-    void DrawTransparent(const VoxelGeometry& geometry, float3 position, float alpha);
-    void DrawGapFiller(const VoxelGeometry& geometry, float3 position);
+    void Draw(const VoxelMesh& geometry, float3 position);
+    void DrawTransparent(const VoxelMesh& geometry, float3 position, float alpha);
+    void DrawGapFiller(const VoxelMesh& geometry, float3 position);
 
     //
     //  Flushes queued render ops.
@@ -57,9 +57,9 @@ private:
     //
     //  Implements the actual drawing of voxel meshes.
     //
-    void DrawImmediate(const VoxelGeometry& geometry, float3 position);
-    void DrawTransparentImmediate(const VoxelGeometry& geometry, float3 position, float alpha);
-    void DrawGapFillerImmediate(const VoxelGeometry& geometry, float3 position);
+    void DrawImmediate(const VoxelMesh& geometry, float3 position);
+    void DrawTransparentImmediate(const VoxelMesh& geometry, float3 position, float alpha);
+    void DrawGapFillerImmediate(const VoxelMesh& geometry, float3 position);
 
     //
     //  Properties.
@@ -85,7 +85,7 @@ private:
     };
     struct RenderOp
     {
-        const VoxelGeometry* geometry;
+        const VoxelMesh* geometry;
         float3 position;
         float distance2;
         float alpha;

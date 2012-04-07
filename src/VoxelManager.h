@@ -12,7 +12,7 @@
 class Camera;
 class GraphicsDevice;
 class VoxelProcessor;
-class VoxelGeometry;
+class VoxelMesh;
 
 class VoxelManager : public boost::noncopyable
 {
@@ -72,7 +72,7 @@ private:
         int depth;
         uint64_t id;
         float distance;
-        std::shared_ptr<VoxelGeometry> geometry;
+        std::shared_ptr<VoxelMesh> geometry;
         float alpha;
         Node* parent;
         bool visible;
@@ -127,7 +127,7 @@ private:
     //
     //  Properties.
     //
-    static const size_t MaxTreeDepth = 3;
+    static const size_t MaxTreeDepth = 8;
     GraphicsDevice& m_graphicsDevice;
     uint3 m_cellsPerNode;
     size_t m_treeDepth;

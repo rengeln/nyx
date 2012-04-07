@@ -96,7 +96,7 @@
     <ClInclude Include="..\..\..\src\Profiler.h" />
     <ClInclude Include="..\..\..\src\SkyRenderer.h" />
     <ClInclude Include="..\..\..\src\Vector.h" />
-    <ClInclude Include="..\..\..\src\VoxelGeometry.h" />
+    <ClInclude Include="..\..\..\src\VoxelMesh.h" />
     <ClInclude Include="..\..\..\src\VoxelManager.h" />
     <ClInclude Include="..\..\..\src\VoxelProcessor.h" />
     <ClInclude Include="..\..\..\src\VoxelRenderer.h" />
@@ -114,7 +114,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\Profiler.cpp" />
     <ClCompile Include="..\..\..\src\SkyRenderer.cpp" />
-    <ClCompile Include="..\..\..\src\VoxelGeometry.cpp" />
+    <ClCompile Include="..\..\..\src\VoxelMesh.cpp" />
     <ClCompile Include="..\..\..\src\VoxelManager.cpp" />
     <ClCompile Include="..\..\..\src\VoxelProcessor.cpp" />
     <ClCompile Include="..\..\..\src\VoxelRenderer.cpp" />
@@ -139,7 +139,6 @@
     <None Include="..\..\..\assets\shaders\voxel_generator_vs.hlsl" />
     <None Include="..\..\..\assets\shaders\voxel_mesh_ps.hlsl" />
     <None Include="..\..\..\assets\shaders\voxel_mesh_vs.hlsl" />
-    <None Include="..\..\..\Planning.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

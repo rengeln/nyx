@@ -6,7 +6,7 @@
 #include "Prefix.h"
 #include "Camera.h"
 #include "GraphicsDevice.h"
-#include "VoxelGeometry.h"
+#include "VoxelMesh.h"
 #include "VoxelRenderer.h"
 
 std::weak_ptr<VoxelRenderer::SharedProperties> VoxelRenderer::m_sharedWeakPtr;
@@ -281,7 +281,7 @@ void VoxelRenderer::SetCamera(const Camera& camera)
     m_cameraPosition = camera.GetPosition();
 }
 
-void VoxelRenderer::Draw(const VoxelGeometry& geometry, float3 position)
+void VoxelRenderer::Draw(const VoxelMesh& geometry, float3 position)
 {
     float3 diff = position - m_cameraPosition;
     float dist2 = Dot(diff, diff);
@@ -295,7 +295,7 @@ void VoxelRenderer::Draw(const VoxelGeometry& geometry, float3 position)
     m_renderOps.push_back(op);
 }
 
-void VoxelRenderer::DrawGapFiller(const VoxelGeometry& geometry, float3 position)
+void VoxelRenderer::DrawGapFiller(const VoxelMesh& geometry, float3 position)
 {
     float3 diff = position - m_cameraPosition;
     float dist2 = Dot(diff, diff);
@@ -309,7 +309,7 @@ void VoxelRenderer::DrawGapFiller(const VoxelGeometry& geometry, float3 position
     m_gapFillerRenderOps.push_back(op);    
 }
 
-void VoxelRenderer::DrawTransparent(const VoxelGeometry& geometry, float3 position, float alpha)
+void VoxelRenderer::DrawTransparent(const VoxelMesh& geometry, float3 position, float alpha)
 {
     float3 diff = position - m_cameraPosition;
     float dist2 = Dot(diff, diff);
@@ -359,7 +359,7 @@ void VoxelRenderer::Flush()
     m_transparentRenderOps.clear();
 }
 
-void VoxelRenderer::DrawImmediate(const VoxelGeometry& geometry,
+void VoxelRenderer::DrawImmediate(const VoxelMesh& geometry,
                          float3 position)
 {
     ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
@@ -384,7 +384,7 @@ void VoxelRenderer::DrawImmediate(const VoxelGeometry& geometry,
     //
     ID3D11Buffer* vertexBufferPtr = geometry.GetVertexBuffer();
     size_t offset = 0,
-           stride = sizeof(VoxelGeometry::Vertex);
+           stride = sizeof(VoxelMesh::Vertex);
     ID3D11ShaderResourceView* shaderResourceViewPtrs[] =
     {
         m_shared->textureViews[0].get(),
@@ -416,7 +416,7 @@ void VoxelRenderer::DrawImmediate(const VoxelGeometry& geometry,
     context.DrawIndexed(geometry.GetIndexCount(), 0, 0);   
 }
 
-void VoxelRenderer::DrawTransparentImmediate(const VoxelGeometry& geometry,
+void VoxelRenderer::DrawTransparentImmediate(const VoxelMesh& geometry,
                                              float3 position,
                                              float alpha)
 {
@@ -442,7 +442,7 @@ void VoxelRenderer::DrawTransparentImmediate(const VoxelGeometry& geometry,
     //
     ID3D11Buffer* vertexBufferPtr = geometry.GetVertexBuffer();
     size_t offset = 0,
-           stride = sizeof(VoxelGeometry::Vertex);
+           stride = sizeof(VoxelMesh::Vertex);
     ID3D11ShaderResourceView* shaderResourceViewPtrs[] =
     {
         m_shared->textureViews[0].get(),
@@ -479,7 +479,7 @@ void VoxelRenderer::DrawTransparentImmediate(const VoxelGeometry& geometry,
     context.OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
 }
 
-void VoxelRenderer::DrawGapFillerImmediate(const VoxelGeometry& geometry,
+void VoxelRenderer::DrawGapFillerImmediate(const VoxelMesh& geometry,
                                            float3 position)
 {
     ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
@@ -504,7 +504,7 @@ void VoxelRenderer::DrawGapFillerImmediate(const VoxelGeometry& geometry,
     //
     ID3D11Buffer* vertexBufferPtr = geometry.GetVertexBuffer();
     size_t offset = 0,
-           stride = sizeof(VoxelGeometry::Vertex);
+           stride = sizeof(VoxelMesh::Vertex);
     ID3D11ShaderResourceView* shaderResourceViewPtrs[] =
     {
         m_shared->textureViews[0].get(),

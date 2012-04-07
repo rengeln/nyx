@@ -5,9 +5,9 @@
 
 #include "Prefix.h"
 #include "GraphicsDevice.h"
-#include "VoxelGeometry.h"
+#include "VoxelMesh.h"
 
-VoxelGeometry::VoxelGeometry(GraphicsDevice& graphicsDevice)
+VoxelMesh::VoxelMesh(GraphicsDevice& graphicsDevice)
 : m_graphicsDevice(graphicsDevice),
   m_vertexCount(0),
   m_indexCount(0),
@@ -15,11 +15,11 @@ VoxelGeometry::VoxelGeometry(GraphicsDevice& graphicsDevice)
 {
 }
 
-VoxelGeometry::~VoxelGeometry()
+VoxelMesh::~VoxelMesh()
 {
 }
 
-void VoxelGeometry::Resize(size_t vertexCount, size_t indexCount)
+void VoxelMesh::Resize(size_t vertexCount, size_t indexCount)
 {
     m_vertexBuffer.reset();
     m_indexBuffer.reset();
@@ -70,7 +70,7 @@ void VoxelGeometry::Resize(size_t vertexCount, size_t indexCount)
     }
 }
 
-void VoxelGeometry::SetReady(bool ready)
+void VoxelMesh::SetReady(bool ready)
 {
     m_ready = ready;
 }

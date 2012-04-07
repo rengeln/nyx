@@ -8,7 +8,7 @@
 #include "GraphicsDevice.h"
 #include "LineRenderer.h"
 #include "Profiler.h"
-#include "VoxelGeometry.h"
+#include "VoxelMesh.h"
 #include "VoxelManager.h"
 #include "VoxelProcessor.h"
 #include "VoxelRenderer.h"
@@ -25,9 +25,9 @@ VoxelManager::VoxelManager(GraphicsDevice& graphicsDevice,
 
     std::fill(m_nodeDimensions.begin(), m_nodeDimensions.end(), float3::Replicate(-1.0f));
     std::fill(m_splitDistances.begin(), m_splitDistances.end(), -1.0f);
-    std::fill(m_unsplitDistances.begin(), m_splitDistances.end(), -1.0f);
+    std::fill(m_unsplitDistances.begin(), m_unsplitDistances.end(), -1.0f);
     std::fill(m_fadeOutStartDistances.begin(), m_fadeOutStartDistances.end(), -1.0f);
-    std::fill(m_fadeOutEndDistances.begin(), m_fadeOutStartDistances.end(), -1.0f);
+    std::fill(m_fadeOutEndDistances.begin(), m_fadeOutEndDistances.end(), -1.0f);
 
     m_nodeDimensions[0] = nodeDimensions;
     for (size_t i = 1; i < m_treeDepth; ++i)
@@ -207,7 +207,7 @@ std::shared_ptr<VoxelManager::Node> VoxelManager::CreateNode(uint64_t id,
 
     node->size = scale;
 
-    node->geometry = std::make_shared<VoxelGeometry>(m_graphicsDevice);
+    node->geometry = std::make_shared<VoxelMesh>(m_graphicsDevice);
 
     return node;
 }

@@ -3,15 +3,15 @@
 //	See accompanying LICENSE file for full license information.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __NYX_VOXELGEOMETRY_H__
-#define __NYX_VOXELGEOMETRY_H__
+#ifndef __NYX_VOXELMESH_H__
+#define __NYX_VOXELMESH_H__
 
 //
 //  Forward declarations.
 //
 class GraphicsDevice;
 
-class VoxelGeometry : public boost::noncopyable
+class VoxelMesh : public boost::noncopyable
 {
 public:
     //
@@ -31,12 +31,12 @@ public:
     //      [in] graphicsDevice
     //          Parent GraphicsDevice instance.
     //
-    VoxelGeometry(GraphicsDevice& graphicsDevice);
+    VoxelMesh(GraphicsDevice& graphicsDevice);
 
     //
     //  Destructor.
     //
-    ~VoxelGeometry();
+    ~VoxelMesh();
 
     //
     //  Resizes the vertex and index buffers.
@@ -91,30 +91,30 @@ private:
     bool m_ready;
 };
 
-inline size_t VoxelGeometry::GetVertexCount() const
+inline size_t VoxelMesh::GetVertexCount() const
 {
     return m_vertexCount;
 }
 
-inline size_t VoxelGeometry::GetIndexCount() const
+inline size_t VoxelMesh::GetIndexCount() const
 {
     return m_indexCount;
 }
 
-inline ID3D11Buffer* VoxelGeometry::GetVertexBuffer() const
+inline ID3D11Buffer* VoxelMesh::GetVertexBuffer() const
 {
     return m_vertexBuffer.get();
 }
 
-inline ID3D11Buffer* VoxelGeometry::GetIndexBuffer() const
+inline ID3D11Buffer* VoxelMesh::GetIndexBuffer() const
 {
     return m_indexBuffer.get();
 }
 
-inline bool VoxelGeometry::IsReady() const
+inline bool VoxelMesh::IsReady() const
 {
     return m_ready;
 }
 
 
-#endif  // __NYX_VOXELGEOMETRY_H__
+#endif  // __NYX_VOXELMESH_H__

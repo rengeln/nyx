@@ -6,7 +6,7 @@
 #include "Prefix.h"
 #include "GraphicsDevice.h"
 #include "Profiler.h"
-#include "VoxelGeometry.h"
+#include "VoxelMesh.h"
 #include "VoxelManager.h"
 #include "VoxelProcessor.h"
 
@@ -350,7 +350,7 @@ VoxelProcessor::VoxelProcessor(GraphicsDevice& graphicsDevice)
                 0                                                           //  OutputSlot
             }
         };
-        size_t genVerticesGSStreamOutStride = sizeof(VoxelGeometry::Vertex);
+        size_t genVerticesGSStreamOutStride = sizeof(VoxelMesh::Vertex);
         D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateGeometryShaderWithStreamOutput(
                                     bytecode->GetBufferPointer(),           //  pShaderBytecode
                                     bytecode->GetBufferSize(),              //  BytecodeLength
@@ -773,7 +773,7 @@ VoxelProcessor::VoxelProcessor(GraphicsDevice& graphicsDevice)
     const size_t MaxVertices = MaxCells * 3;
     D3D11_BUFFER_DESC vertexBufferDesc =
     {
-        MaxVertices * sizeof(VoxelGeometry::Vertex),                        //  ByteWidth
+        MaxVertices * sizeof(VoxelMesh::Vertex),                        //  ByteWidth
         D3D11_USAGE_DEFAULT,                                            //  Usage
         D3D11_BIND_STREAM_OUTPUT | D3D11_BIND_VERTEX_BUFFER,            //  BindFlags
         0,                                                              //  CPUAccessFlags
@@ -1023,7 +1023,7 @@ VoxelProcessor::~VoxelProcessor()
 {
 }
 
-void VoxelProcessor::Process(std::shared_ptr<VoxelGeometry> geometry,
+void VoxelProcessor::Process(std::shared_ptr<VoxelMesh> geometry,
                              float3 position,
                              float3 size,
                              size_t depth)
@@ -1105,7 +1105,7 @@ void VoxelProcessor::Update()
             context.Unmap(m_stagingTexture.get(), 0);
             */
             //
-            //  Copy the vertex and index buffers to the VoxelGeometry object.
+            //  Copy the vertex and index buffers to the VoxelMesh object.
             //
             m_geometryPtr->Resize(m_vertexCount, m_indexCount);
 
@@ -1116,7 +1116,7 @@ void VoxelProcessor::Update()
                     0,                                                          //  left
                     0,                                                          //  top
                     0,                                                          //  front
-                    m_vertexCount * sizeof(VoxelGeometry::Vertex),              //  right
+                    m_vertexCount * sizeof(VoxelMesh::Vertex),              //  right
                     1,                                                          //  bottom
                     1                                                           //  back
                 };
