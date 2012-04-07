@@ -35,13 +35,13 @@ PS_Out main(PS_In input)
     //  To avoid artifacts caused by repeating each texture is sampled twice at non-synchronous
     //  repeat values, then blended together.
     //
-    float2 coord1 = input.worldPos.zy / 8.0f;  
-    float2 coord2 = input.worldPos.zx / 8.0f;  
-    float2 coord3 = input.worldPos.xy / 8.0f; 
+    float2 coord1 = input.worldPos.zy / 12.0f;  
+    float2 coord2 = input.worldPos.zx / 12.0f;  
+    float2 coord3 = input.worldPos.xy / 12.0f; 
 
-	float2 coord4 = input.worldPos.zy / 127.0f;
-	float2 coord5 = input.worldPos.zx / 127.0f;
-	float2 coord6 = input.worldPos.xy / 127.0f;
+	float2 coord4 = input.worldPos.zy / 313.0f;
+	float2 coord5 = input.worldPos.zx / 313.0f;
+	float2 coord6 = input.worldPos.xy / 313.0f;
 
 	float3 blendColor = float3(0, 0, 0);
 	float materialWeights[8] =

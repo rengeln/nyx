@@ -32,18 +32,19 @@ Output main(Input input)
     float3 pos2D = float3(pos.x, 0.0f, pos.z);
 
     //  Simple terrain generation algorithm using multiple noise octaves
-    float3 mtn_warp = float3(simplex_noise(pos / 313.758),
-                             0,
-                             simplex_noise(pos / 353.921));
-    float3 mtn_pos = pos2D + mtn_warp * 64.0f;
-    float mntn = simplex_noise_range(mtn_pos / 3131.1f, -0.2f, 1.0f);
-    float elev = simplex_noise_range(mtn_pos / 1213.0f, 0.0f, 1.0f);
-    float disp = simplex_noise_range(mtn_pos / 637.0f, 0.0f, 1.0f);
-    float height = 200.0f + ((mntn * (elev * elev)) * 1200.0f) + ((disp * disp) * 200.0f);
+    float global = simplex_noise_range(pos / 13171.0f, 0.2f, 1.0f);
 
-    float rough = min(simplex_noise_range(pos / 327.0f, 0.1f, 1.0f), elev);
+    float3 mtn_warp = float3(simplex_noise(pos / 273.758),
+                             0,
+                             simplex_noise(pos / 259.921));
+    float3 mtn_pos = pos2D + mtn_warp * 61.0f;
+    float mntn = simplex_noise_range(mtn_pos / 4737.1f, 0, 1.0f);
+    float elev = simplex_noise_range(mtn_pos / 1213.0f, 0.0f, 1.0f) * global;
+    float disp = simplex_noise_range(mtn_pos / 637.0f, 0.0f, 1.0f);
+    float height = 100.0f + (mntn * mntn * 1800.0f) + (elev * elev * 600.0f) + (disp * disp * 200.0f);
+
+    float rough = min(simplex_noise_range(pos / 97.0f, 0.1f, 1.0f), mntn * 0.5f);
     rough = pow(rough, 2.3f);
-    float dirt = rough;
 
     float3 warp = float3(simplex_noise(pos / 27.758),
                          simplex_noise(pos / 29.572),
@@ -51,9 +52,9 @@ Output main(Input input)
     float3 warp_pos = pos + warp * 8.0f;
 
     float surface_density = -(pos.y - height);
-    float cave_density = ((1.0f + simplex_noise(warp_pos / 97.0f)) / 2.0f) * -96.0f;
+    float cave_density = ((1.0f + simplex_noise(warp_pos / 131.0f)) / 2.0f) * -400.0f;
     float density = surface_density + (cave_density * rough);
-    float detail = ((1.0f + simplex_noise(warp_pos / 4.0f)) / 2.0f) * -2.0f;
+    float detail = ((1.0f + simplex_noise(warp_pos / 27.0f)) / 2.0f) * -2.0f;
 
     density += (detail * rough);
 
@@ -62,6 +63,7 @@ Output main(Input input)
     output.density = density; //sign(density);   //  sign(density);
 
     //  Calculate the material
+    float dirt = rough;
     float grass = 1.0f - dirt;
     float light_factor = simplex_noise_range(pos / 273.0f, 0.0f, 1.0f);
     float4 mat1 = float4(0, grass * light_factor, grass - (grass * light_factor), dirt);
