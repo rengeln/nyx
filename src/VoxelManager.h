@@ -83,6 +83,7 @@ private:
     //
     static uint64_t MakeNodeId(int16_t baseX,
                                int16_t baseZ,
+                               int16_t baseY,
                                size_t depth,
                                size_t subX,
                                size_t subY,
@@ -145,15 +146,18 @@ private:
 
 inline uint64_t VoxelManager::MakeNodeId(int16_t baseX, 
                                          int16_t baseZ,
+                                         int16_t baseY,
                                          size_t depth, 
                                          size_t subX,
                                          size_t subY,
                                          size_t subZ)
 {
     uint64_t baseX64 = *reinterpret_cast<uint16_t*>(&baseX),
-             baseZ64 = *reinterpret_cast<uint16_t*>(&baseZ);
+             baseZ64 = *reinterpret_cast<uint16_t*>(&baseZ),
+             baseY64 = *reinterpret_cast<uint16_t*>(&baseY);
     return (baseX64 << 48) |
            (baseZ64 << 32) |
+           (baseY64 << 16) |
            ((depth & 0x0F) << 12) |
            ((subX & 0x0F) << 8) |
            ((subY & 0x0F) << 4) |

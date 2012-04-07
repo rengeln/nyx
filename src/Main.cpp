@@ -90,6 +90,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         float roll = 0.0f,
               pitch = 0.0f;
         bool mouseDown;
+        float speed = 0.35f;
 
         float4x4 projectionMatrix = float4x4::PerspectiveProjection(XM_PI / 3.0f,
                                                                     static_cast<float>(WindowWidth) / static_cast<float>(WindowHeight),
@@ -144,17 +145,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
                 mouseDown = false;
             }
 
+            if (GetAsyncKeyState(VK_SHIFT))
+            {
+                speed = 1.0f;
+            }
+            else
+            {
+                speed = 0.45f;
+            }
             if (GetAsyncKeyState('W')) {
-                position += camera.GetForwardVector() * (0.45f * ticks);
+                position += camera.GetForwardVector() * (speed * ticks);
             }
             if (GetAsyncKeyState('S')) {
-                position -= camera.GetForwardVector() * (0.45f * ticks);
+                position -= camera.GetForwardVector() * (speed * ticks);
             }
             if (GetAsyncKeyState('A')) {
-                position -= camera.GetRightVector() * (0.45f * ticks);
+                position -= camera.GetRightVector() * (speed * ticks);
             }
             if (GetAsyncKeyState('D')) {
-                position += camera.GetRightVector() * (0.45f * ticks);
+                position += camera.GetRightVector() * (speed * ticks);
             }
             camera.SetPosition(position);
             manager.Update(camera);

@@ -39,9 +39,9 @@ PS_Out main(PS_In input)
     float2 coord2 = input.worldPos.zx / 8.0f;  
     float2 coord3 = input.worldPos.xy / 8.0f; 
 
-	float2 coord4 = input.worldPos.zy / 31.0f;
-	float2 coord5 = input.worldPos.zx / 31.0f;
-	float2 coord6 = input.worldPos.xy / 31.0f;
+	float2 coord4 = input.worldPos.zy / 127.0f;
+	float2 coord5 = input.worldPos.zx / 127.0f;
+	float2 coord6 = input.worldPos.xy / 127.0f;
 
 	float3 blendColor = float3(0, 0, 0);
 	float materialWeights[8] =

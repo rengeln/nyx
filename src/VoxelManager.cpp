@@ -74,16 +74,21 @@ void VoxelManager::Update(const Camera& camera)
     {
         for (int16_t z = indexZ - visualRadius; z <= indexZ + visualRadius; z++)
         {
-            uint64_t nodeId = (static_cast<uint64_t>(x & 0xFFFF) << 48)|
-                              (static_cast<uint64_t>(z & 0xFFFF) << 32);
-            float nodeX = static_cast<float>(x) * m_nodeDimensions[0].x,
-                  nodeZ = static_cast<float>(z) * m_nodeDimensions[0].z;
-
-            if (m_nodeMap.find(nodeId) == m_nodeMap.end())
+            for (int16_t y = 0; y < 4; ++y)
             {
-                auto node = CreateNode(nodeId, nullptr);
-                m_nodeMap[nodeId] = node;
-                ProcessNode(node);
+                uint64_t nodeId = (static_cast<uint64_t>(x & 0xFFFF) << 48) |
+                                  (static_cast<uint64_t>(z & 0xFFFF) << 32) |
+                                  (static_cast<uint64_t>(y & 0xFFFF) << 16);
+                float nodeX = static_cast<float>(x) * m_nodeDimensions[0].x,
+                      nodeZ = static_cast<float>(z) * m_nodeDimensions[0].z,
+                      nodeY = static_cast<float>(y) * m_nodeDimensions[0].y;
+
+                if (m_nodeMap.find(nodeId) == m_nodeMap.end())
+                {
+                    auto node = CreateNode(nodeId, nullptr);
+                    m_nodeMap[nodeId] = node;
+                    ProcessNode(node);
+                }
             }
         }
     }
@@ -191,16 +196,17 @@ std::shared_ptr<VoxelManager::Node> VoxelManager::CreateNode(uint64_t id,
 
     int base_x = static_cast<int16_t>((id >> 48) & 0xFFFFFF);
     int base_z = static_cast<int16_t>((id >> 32) & 0xFFFFFF);
+    int base_y = static_cast<int16_t>((id >> 16) & 0xFFFFFF);
     node->depth = static_cast<uint32_t>((id >> 12) & 0x0F);
     int sub_x = static_cast<uint32_t>((id >> 8) & 0x0F);
     int sub_y = static_cast<uint32_t>((id >> 4) & 0x0F);
     int sub_z = static_cast<uint32_t>((id >> 0) & 0x0F);
 
     node->position.x = static_cast<float>(base_x) * m_nodeDimensions[0].x;
-    node->position.y = 0.0f;
+    node->position.y = static_cast<float>(base_y) * m_nodeDimensions[0].y;
     node->position.z = static_cast<float>(base_z) * m_nodeDimensions[0].z;
 
-    float3 scale = m_nodeDimensions[0] / static_cast<float>(1 << (node->depth));
+    float3 scale = m_nodeDimensions[node->depth];
     node->position.x += static_cast<float>(sub_x) * scale.x;
     node->position.y += static_cast<float>(sub_y) * scale.y;
     node->position.z += static_cast<float>(sub_z) * scale.z;
@@ -220,7 +226,7 @@ void VoxelManager::UpdateNode(Node& node,
     float3 center = node.position + (node.size * 0.5f);
 
 #define SQUARE(x) ((x)*(x))
-    node.distance = sqrt(SQUARE(cpos.x - center.x) + SQUARE(cpos.y - center.y) + SQUARE(cpos.z - center.z));
+    node.distance = sqrt(SQUARE(cpos.x - center.x) + SQUARE(cpos.z - center.z));
     assert(node.distance >= 0);
 
     if (!node.children[0] && node.depth < m_treeDepth - 1)
@@ -251,7 +257,7 @@ void VoxelManager::UpdateNode(Node& node,
         //  If not split, we may be fading in
         //  Use the parent node's distance for the blending factor
         center = node.parent->position + (node.parent->size * 0.5f);
-        float dist = sqrt(SQUARE(cpos.x - center.x) + SQUARE(cpos.y - center.y) + SQUARE(cpos.z - center.z));
+        float dist = sqrt(SQUARE(cpos.x - center.x) + SQUARE(cpos.z - center.z));
         float frac = m_splitDistances[node.depth - 1] - dist;
         node.alpha = min(1.0f, max(0.0f, frac / (m_splitDistances[node.depth - 1] - 
                                                  m_fadeOutStartDistances[node.depth - 1])));
@@ -345,6 +351,7 @@ void VoxelManager::SplitNode(Node& node)
 
     int baseX = static_cast<int16_t>((node.id >> 48) & 0xFFFFFF);
     int baseZ = static_cast<int16_t>((node.id >> 32) & 0xFFFFFF);
+    int baseY = static_cast<int16_t>((node.id >> 16) & 0xFFFFFF);
     int sub_x = static_cast<uint32_t>((node.id >> 8) & 0x0F);
     int sub_y = static_cast<uint32_t>((node.id >> 4) & 0x0F);
     int sub_z = static_cast<uint32_t>((node.id >> 0) & 0x0F);
@@ -358,6 +365,7 @@ void VoxelManager::SplitNode(Node& node)
             {
                 node.children[index] = CreateNode(MakeNodeId(baseX, 
                                                              baseZ,
+                                                             baseY,
                                                              node.depth + 1,
                                                              (sub_x * 2) + subX,
                                                              (sub_y * 2) + subY,

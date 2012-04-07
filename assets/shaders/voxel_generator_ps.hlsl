@@ -32,12 +32,16 @@ Output main(Input input)
     float3 pos2D = float3(pos.x, 0.0f, pos.z);
 
     //  Simple terrain generation algorithm using multiple noise octaves
-    float mntn = simplex_noise_range(pos2D / 2173.1f, -0.2f, 1.0f);
-    float elev = simplex_noise_range(pos2D / 1213.0f, 0.0f, 1.0f);
-    float disp = simplex_noise_range(pos2D / 637.0f, 0.0f, 1.0f);
-    float height = 64.0f + ((mntn * (elev * elev)) * 400.0f) + ((disp * disp) * 150.0f);
+    float3 mtn_warp = float3(simplex_noise(pos / 313.758),
+                             0,
+                             simplex_noise(pos / 353.921));
+    float3 mtn_pos = pos2D + mtn_warp * 64.0f;
+    float mntn = simplex_noise_range(mtn_pos / 4731.1f, -0.2f, 1.0f);
+    float elev = simplex_noise_range(mtn_pos / 1213.0f, 0.0f, 1.0f);
+    float disp = simplex_noise_range(mtn_pos / 637.0f, 0.0f, 1.0f);
+    float height = 200.0f + ((mntn * (elev * elev)) * 1200.0f) + ((disp * disp) * 200.0f);
 
-    float rough = simplex_noise_range(pos / 327.0f, 0.1f, 1.0f);
+    float rough = min(simplex_noise_range(pos / 327.0f, 0.1f, 1.0f), elev);
     float dirt = rough;
     rough = pow(rough, 2.3f);
 
