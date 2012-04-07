@@ -6,10 +6,11 @@
 #ifndef __NYX_VOXELMANAGER_H__
 #define __NYX_VOXELMANAGER_H__
 
+#include "Camera.h"
+
 //
 //  Forward declarations.
 //
-class Camera;
 class GraphicsDevice;
 class VoxelProcessor;
 class VoxelMesh;
@@ -145,6 +146,7 @@ private:
     GraphicsDevice& m_graphicsDevice;
     std::unique_ptr<VoxelRenderer> m_voxelRenderer;
     std::unique_ptr<LineRenderer> m_lineRenderer;
+    Camera m_oldCamera;
     uint3 m_cellsPerNode;
     size_t m_treeDepth;
     float m_radius;

@@ -23,6 +23,8 @@ VoxelManager::VoxelManager(GraphicsDevice& graphicsDevice,
 {
     assert(m_treeDepth <= MaxTreeDepth);
 
+    m_oldCamera.SetPosition(float3::Replicate(FLT_MAX));
+
     m_voxelRenderer.reset(new VoxelRenderer(m_graphicsDevice));
     m_lineRenderer.reset(new LineRenderer(m_graphicsDevice));
 
@@ -67,30 +69,53 @@ void VoxelManager::SetCamera(const Camera& camera)
     static Profiler profiler("VoxelManager::SetCamera()");
     profiler.Begin();
 
-    //  Translate the camera's position into top-level node indices
-    float3 worldPos = camera.GetPosition();
-    int64_t indexX = static_cast<int>((worldPos.x - (m_nodeDimensions[0].x / 2.0f)) / m_nodeDimensions[0].x),
-            indexZ = static_cast<int>((worldPos.z - (m_nodeDimensions[0].z / 2.0f)) / m_nodeDimensions[0].z);
-    int visualRadius = static_cast<int>(m_radius / m_nodeDimensions[0].x);
-    //  Ensure all nodes within the visual radius are active
-    for (int16_t x = indexX - visualRadius; x <= indexX + visualRadius; x++)
+    //  If the camera's position has not changed significantly since the last
+    //  call to SetCamera, don't bother searching for new nodes to add. (Still
+    //  run update on all existing nodes.)
+    float delta = Dot(camera.GetPosition() - m_oldCamera.GetPosition(),
+                      camera.GetPosition() - m_oldCamera.GetPosition());
+    if (delta > 10.0f)
     {
-        for (int16_t z = indexZ - visualRadius; z <= indexZ + visualRadius; z++)
+        m_oldCamera = camera;
+        //  Translate the camera's position into top-level node indices
+        float3 worldPos = camera.GetPosition();
+        int32_t indexX = static_cast<int16_t>((worldPos.x - (m_nodeDimensions[0].x / 2.0f)) / m_nodeDimensions[0].x),
+                indexZ = static_cast<int16_t>((worldPos.z - (m_nodeDimensions[0].z / 2.0f)) / m_nodeDimensions[0].z);
+   
+        int visualRadius = static_cast<int>(m_radius / m_nodeDimensions[0].x);
+        //  Ensure all nodes within the visual radius are active
+        for (int16_t x = indexX - visualRadius; x <= indexX + visualRadius; x++)
         {
-            for (int16_t y = 0; y < 4; ++y)
+            for (int16_t z = indexZ - visualRadius; z <= indexZ + visualRadius; z++)
             {
-                uint64_t nodeId = (static_cast<uint64_t>(x & 0xFFFF) << 48) |
-                                  (static_cast<uint64_t>(z & 0xFFFF) << 32) |
-                                  (static_cast<uint64_t>(y & 0xFFFF) << 16);
-                float nodeX = static_cast<float>(x) * m_nodeDimensions[0].x,
-                      nodeZ = static_cast<float>(z) * m_nodeDimensions[0].z,
-                      nodeY = static_cast<float>(y) * m_nodeDimensions[0].y;
-
-                if (m_nodeMap.find(nodeId) == m_nodeMap.end())
+                for (int16_t y = 0; y < 4; ++y)
                 {
-                    auto node = CreateNode(nodeId, nullptr);
-                    m_nodeMap[nodeId] = node;
-                    ProcessNode(node);
+                    float3 pos(static_cast<float>(x) * m_nodeDimensions[0].x,
+                               0,
+                               static_cast<float>(z) * m_nodeDimensions[0].z);
+                    float3 cpos = float3(camera.GetPosition().x,
+                                         0,
+                                         camera.GetPosition().z);
+                    float dist = Dot(pos - cpos,
+                                     pos - cpos);
+                    if (dist < m_radius * m_radius)
+                    {
+                        uint64_t nodeId = (static_cast<uint64_t>(x & 0xFFFF) << 48) |
+                                          (static_cast<uint64_t>(z & 0xFFFF) << 32) |
+                                          (static_cast<uint64_t>(y & 0xFFFF) << 16);
+
+                        if (m_nodeMap.find(nodeId) == m_nodeMap.end())
+                        {
+                            auto node = CreateNode(nodeId, nullptr);
+                            m_nodeMap[nodeId] = node;
+                            ProcessNode(node);
+                        }
+                        //OutputDebugStringA("good\n");
+                    }
+                    else
+                    {
+                        //OutputDebugStringA("bad\n");
+                    }
                 }
             }
         }
@@ -275,6 +300,14 @@ void VoxelManager::UpdateNode(Node& node,
         float frac = m_splitDistances[node.depth - 1] - dist;
         node.alpha = min(1.0f, max(0.0f, frac / (m_splitDistances[node.depth - 1] - 
                                                  m_fadeOutStartDistances[node.depth - 1])));
+    }
+
+    if (node.children[0])
+    {
+        for (size_t i = 0; i < 8; ++i)
+        {
+            UpdateNode(*node.children[i], camera);
+        }
     }
 }
 

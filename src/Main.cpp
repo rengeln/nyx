@@ -97,9 +97,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         float4x4 projectionMatrix = float4x4::PerspectiveProjection(XM_PI / 3.0f,
                                                                     static_cast<float>(WindowWidth) / static_cast<float>(WindowHeight),
                                                                     0.1f,
-                                                                    8000.0f);
+                                                                    12000.0f);
         camera.SetProjectionMatrix(projectionMatrix);
-        camera.SetPosition(position);
+        camera.SetPosition(float3(-1000.0f, 600.0f, 1000.0f));
 
         bool showGrid = false;
 
@@ -144,7 +144,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
             if (GetAsyncKeyState(VK_SHIFT))
             {
-                speed = 1.0f;
+                speed = 10.0f;
             }
             else
             {
