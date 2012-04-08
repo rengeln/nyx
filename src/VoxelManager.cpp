@@ -195,7 +195,12 @@ void VoxelManager::ProcessNodes()
     while (!m_pendingNodes.empty())
     {
         std::shared_ptr<Node> node = *m_pendingNodes.begin();
-
+        if (node.unique())
+        {
+            // If this is the only pointer, the node was deleted before it was processed
+            m_pendingNodes.erase(m_pendingNodes.begin());
+            continue;
+        }
         size_t processor = 0;
         while (processor < 4)
         {

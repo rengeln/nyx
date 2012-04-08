@@ -97,9 +97,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         float4x4 projectionMatrix = float4x4::PerspectiveProjection(XM_PI / 3.0f,
                                                                     static_cast<float>(WindowWidth) / static_cast<float>(WindowHeight),
                                                                     0.1f,
-                                                                    12000.0f);
+                                                                    32000.0f);
         camera.SetProjectionMatrix(projectionMatrix);
-        camera.SetPosition(float3(-1000.0f, 600.0f, 1000.0f));
+        camera.SetPosition(float3(0, 1200.0f, 0));
 
         bool showGrid = false;
 

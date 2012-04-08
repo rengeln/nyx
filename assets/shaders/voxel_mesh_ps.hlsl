@@ -14,6 +14,7 @@ struct PS_In {
 	float3 normal : NORMAL;
 	float3 worldPos : TEXCOORD0;
 	float4 materialWeights[2] : TEXCOORD1;
+    float fog : TEXCOORD3;
 };
 
 //

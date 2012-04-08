@@ -16,6 +16,7 @@ struct VS_Out {
 	float3 normal : NORMAL;
 	float3 worldPos : TEXCOORD0;
 	float4 materialWeights[2] : TEXCOORD1;
+    float fog : TEXCOORD3;
 };
 
 //
@@ -49,5 +50,6 @@ VS_Out main(VS_In input)
 		float((input.material.y >> 16) & 0xFF) / 255.0f,
 		float((input.material.y >> 8) & 0xFF) / 255.0f,
 		float((input.material.y >> 0) & 0xFF) / 255.0f);
+    output.fog = 0;
 	return output; 
 }

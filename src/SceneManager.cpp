@@ -13,9 +13,9 @@ SceneManager::SceneManager(GraphicsDevice& graphicsDevice)
 : m_graphicsDevice(graphicsDevice)
 {
     m_voxelManager.reset(new VoxelManager(m_graphicsDevice,
-                                          4,
-                                          float3(640.0f, 640.0f, 640.0f),
-                                          7200.0f));
+                                          5,
+                                          float3(2048.0f, 2048.0f, 2048.0f),
+                                          18000.0f));
     m_skyRenderer.reset(new SkyRenderer(m_graphicsDevice));
 }
 
