@@ -92,7 +92,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         float roll = 0.0f,
               pitch = 0.0f;
         bool mouseDown;
-        float speed = 0.35f;
+        float speed;
 
         float4x4 projectionMatrix = float4x4::PerspectiveProjection(XM_PI / 3.0f,
                                                                     static_cast<float>(WindowWidth) / static_cast<float>(WindowHeight),
@@ -148,7 +148,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
             else
             {
-                speed = 0.45f;
+                speed = 1.0f;
             }
             if (GetAsyncKeyState('W')) {
                 position += camera.GetForwardVector() * (speed * ticks);
