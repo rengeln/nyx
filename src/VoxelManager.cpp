@@ -330,7 +330,20 @@ void VoxelManager::DrawNode(Node& node)
 {
     if (node.geometry->IsReady() && node.visible)
     {
-        if (node.alpha == 1.0f)
+        bool mustDraw = false;
+        if (node.children[0])
+        {
+            for (size_t i = 0; i < 8; ++i)
+            {
+                if (!node.children[0]->geometry->IsReady())
+                {
+                    mustDraw = true;
+                    break;
+                }
+            }
+        }
+
+        if (mustDraw || node.alpha == 1.0f)
         {
             m_voxelRenderer->Draw(*node.geometry,
                                   node.position);
@@ -342,7 +355,7 @@ void VoxelManager::DrawNode(Node& node)
                                              node.alpha);
         }
         
-        if (node.children[0])
+        if (!mustDraw && node.children[0])
         {
             if (!node.children[0]->children[0] && node.alpha < 1.0f)
             {

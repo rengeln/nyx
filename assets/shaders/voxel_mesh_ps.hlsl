@@ -26,6 +26,7 @@ PS_Out main(PS_In input)
     //  Calculate the texture weights in each dimension.
     //
     float3 blend_weights = abs(input.normal.xyz);  
+    blend_weights.y *= 0.4f;
     blend_weights = (blend_weights - 0.2) * 7;  
     blend_weights = max(blend_weights, 0);      // Force weights to sum to 1.0 (very important!)  
     blend_weights /= (blend_weights.x + blend_weights.y + blend_weights.z ).xxx;   
@@ -37,12 +38,12 @@ PS_Out main(PS_In input)
     //  repeat values, then blended together.
     //
     float2 coord1 = input.worldPos.zy / 12.0f;  
-    float2 coord2 = input.worldPos.zx / 12.0f;  
-    float2 coord3 = input.worldPos.xy / 12.0f; 
+    float2 coord2 = input.worldPos.zx / 11.0f;  
+    float2 coord3 = input.worldPos.xy / 13.0f; 
 
-	float2 coord4 = input.worldPos.zy / 313.0f;
-	float2 coord5 = input.worldPos.zx / 313.0f;
-	float2 coord6 = input.worldPos.xy / 313.0f;
+	float2 coord4 = input.worldPos.zy / 111.0f;
+	float2 coord5 = input.worldPos.zx / 131.0f;
+	float2 coord6 = input.worldPos.xy / 126.0f;
 
 	float3 blendColor = float3(0, 0, 0);
 	float materialWeights[8] =
