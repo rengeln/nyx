@@ -218,12 +218,15 @@ VoxelRenderer::VoxelRenderer(GraphicsDevice& graphicsDevice)
         //
         const char* paths[] =
         {
+            "assets/textures/BlackStar.png",
+            "assets/textures/dark_grass.png",
+            "assets/textures/Grass_1.png",
+            "assets/textures/dirt.jpg",
+            "assets/textures/pjrock21.jpg",
             "assets/textures/rock.jpg",
-            "assets/textures/grass.jpg",
-            "assets/textures/grass_light.jpg",
-            "assets/textures/dirt.jpg"
+            "assets/textures/sand.png"
         };
-        for (size_t i = 0; i < 4; i++)
+        for (size_t i = 0; i < sizeof(paths) / sizeof(paths[0]); i++)
         {
             D3DCHECK(D3DX11CreateShaderResourceViewFromFileA(&m_graphicsDevice.GetD3DDevice(),
                                                              paths[i],
@@ -390,7 +393,10 @@ void VoxelRenderer::DrawImmediate(const VoxelMesh& geometry,
         m_shared->textureViews[0].get(),
         m_shared->textureViews[1].get(),
         m_shared->textureViews[2].get(),
-        m_shared->textureViews[3].get()
+        m_shared->textureViews[3].get(),
+        m_shared->textureViews[4].get(),
+        m_shared->textureViews[5].get(),
+        m_shared->textureViews[6].get()
     };
     ID3D11SamplerState* samplerPtr = m_shared->samplerState.get();
 
@@ -407,7 +413,7 @@ void VoxelRenderer::DrawImmediate(const VoxelMesh& geometry,
 
     context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
     context.PSSetConstantBuffers(0, 1, &constantBufferPtr);
-    context.PSSetShaderResources(0, 4, shaderResourceViewPtrs);
+    context.PSSetShaderResources(0, 7, shaderResourceViewPtrs);
     context.PSSetSamplers(0, 1, &samplerPtr);
 
     context.RSSetState(m_shared->rasterizerState.get());
@@ -448,7 +454,10 @@ void VoxelRenderer::DrawTransparentImmediate(const VoxelMesh& geometry,
         m_shared->textureViews[0].get(),
         m_shared->textureViews[1].get(),
         m_shared->textureViews[2].get(),
-        m_shared->textureViews[3].get()
+        m_shared->textureViews[3].get(),
+        m_shared->textureViews[4].get(),
+        m_shared->textureViews[5].get(),
+        m_shared->textureViews[6].get()
     };
     ID3D11SamplerState* samplerPtr = m_shared->samplerState.get();
 
@@ -465,7 +474,7 @@ void VoxelRenderer::DrawTransparentImmediate(const VoxelMesh& geometry,
 
     context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
     context.PSSetConstantBuffers(0, 1, &constantBufferPtr);
-    context.PSSetShaderResources(0, 4, shaderResourceViewPtrs);
+    context.PSSetShaderResources(0, 7, shaderResourceViewPtrs);
     context.PSSetSamplers(0, 1, &samplerPtr);
 
     context.RSSetState(m_shared->rasterizerState.get());
@@ -510,7 +519,10 @@ void VoxelRenderer::DrawGapFillerImmediate(const VoxelMesh& geometry,
         m_shared->textureViews[0].get(),
         m_shared->textureViews[1].get(),
         m_shared->textureViews[2].get(),
-        m_shared->textureViews[3].get()
+        m_shared->textureViews[3].get(),
+        m_shared->textureViews[4].get(),
+        m_shared->textureViews[5].get(),
+        m_shared->textureViews[6].get()
     };
     ID3D11SamplerState* samplerPtr = m_shared->samplerState.get();
 
@@ -527,7 +539,7 @@ void VoxelRenderer::DrawGapFillerImmediate(const VoxelMesh& geometry,
 
     context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
     context.PSSetConstantBuffers(0, 1, &constantBufferPtr);
-    context.PSSetShaderResources(0, 4, shaderResourceViewPtrs);
+    context.PSSetShaderResources(0, 7, shaderResourceViewPtrs);
     context.PSSetSamplers(0, 1, &samplerPtr);
 
     context.RSSetState(m_shared->rasterizerState.get());

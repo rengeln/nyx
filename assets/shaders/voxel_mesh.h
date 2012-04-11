@@ -10,23 +10,23 @@ cbuffer SceneConstants {
 };
 
 sampler MaterialSampler;
-texture2D MaterialTextures[4];
+texture2D MaterialTextures[8];
 
 static const float3 LightDirection = {0.5f, -0.5, 0.5f};
-static const float3 LightColor = {0.7f, 0.7f, 0.7f};
-static const float3 AmbientColor = {0.1f, 0.1f, 0.1f};
+static const float3 LightColor = {0.6f, 0.6f, 0.6f};
+static const float3 AmbientColor = {0.3f, 0.3f, 0.3f};
 
 //
 //  Mapping of material IDs to textures in the X, Y, and Z projections.
 //
 static const uint3 MaterialToTexture[8] =
 {
-	{0, 0, 0},
-	{0, 1, 0},
-	{0, 2, 0},
-	{0, 3, 0},
-	{0, 0, 0},
-	{0, 0, 0},
+	{3, 3, 3},          //  DIRT
+	{4, 1, 4},          //  GRASS (dark)
+	{4, 2, 4},          //  GRASS (light)
+	{4, 3, 4},          //  ROCK (dark)
+	{5, 3, 5},          //  ROCK (light)
+	{5, 6, 5},          //  SAND
 	{0, 0, 0},
 	{0, 0, 0}
 };

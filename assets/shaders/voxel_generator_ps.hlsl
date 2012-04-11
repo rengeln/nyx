@@ -56,24 +56,26 @@ Output main(Input input)
     float3 warpPos = pos + warp * 8.0f;
     float3 warpPos2D = float3(warpPos.x, 0, warpPos.z);
 
+    float ocean = smooth_snap(simplex_noise_range(pos2D / 41731.0f, 0, 0.8f), 8.0f);
+
     float mountainTerm1 = (pos.x / 4000.0f) + (pos.z / 4000.0f) + simplex_noise(pos2D / 6000.0f) * 3.0f;
-    float mountain1 = pow((1.0f + sin(mountainTerm1)) / 2.0f, 5.0f);
+    float mountain1 = pow((1.0f + sin(mountainTerm1)) / 2.0f, 5.0f) * (1.0f - ocean);
 
     float mountainTerm2 = (pos.x / 5000.0f) - (pos.z / 5000.0f) + simplex_noise(pos2D / 8000.0f) * 3.0f;
-    float mountain2 = pow((1.0f + sin(mountainTerm2)) / 2.0f, 5.0f);
+    float mountain2 = pow((1.0f + sin(mountainTerm2)) / 2.0f, 5.0f) * (1.0f - ocean);
 
     float valleyTerm = (pos.x / 2000.0f) - (pos.z / 2000.0f) + simplex_noise(pos2D / 4000.0f) * 5.0f;
     float valley = 1.0f - pow((1.0f + sin(valleyTerm)) / 2.0f, 2.0f);
 
     float riverTerm = (pos.x / 3000.0f) + (pos.z / 3000.0f) + simplex_noise(pos2D / 5000.0f) * 5.0f;
-    float river = pow((1.0f + sin(riverTerm)) / 2.0f, 9.0f);
+    float river = pow((1.0f + sin(riverTerm)) / 2.0f, 14.0f);
 
     float featureTermX = (pos.x / 500.0f) + simplex_noise(pos / 1777.0f) * 2.0f;
     float featureTermZ = (pos.z / 750.0f) + simplex_noise(pos / 1533.0f) * 2.0f;
     float featurePower = pow(simplex_noise_range(pos2D / 2317.0f, 0.0f, 1.0f), 1.5f);
     float feature = smooth_snap(((2.0f + ((sin(featureTermX) + sin(featureTermZ)))) / 4.0f), 12) * featurePower;
 
-    float height = 100.0f + (mountain1 * valley * 1000.0f) + (mountain2 * valley * 1000.0f) + (river * -200.0f) + (feature * 150.0f);
+    float height = 100.0f + (ocean * -1000.0f) + (mountain1 * valley * 1000.0f) + (mountain2 * valley * 1000.0f) + (river * -200.0f) + (feature * 150.0f);
     output.density = -(pos.y - height);
 
     float detailTerm1 = simplex_noise_range(pos / 531.1f, 0.0f, 1.0f);
@@ -92,12 +94,14 @@ Output main(Input input)
     //output.density = sign(output.density);
 
     //  Calculate the material
-    float dirt = saturate((mountain1 + mountain2) * 2.0f);
-    float grass = 1.0f - dirt;
+    float rock = saturate((mountain1 + mountain2) * 2.0f);
+    float sand = (1.0f - rock) * saturate(ocean * 12.0f);
+    float dirt = ((1.0f - rock) - sand) * saturate(river * 2.0f);
+    float grass = ((1.0f - rock) - sand) - dirt;
 
-    float lightFactor = (1.0f + sin((pos.x / 733.0f) + (pos.z / 905.0f) + simplex_noise(pos / 1313.0f) * 5.0f)) / 2.0f;
-    float4 mat1 = float4(0, grass * lightFactor, grass - (grass * lightFactor), dirt);
-    float4 mat2 = float4(0, 0, 0, 0);
+    float lightFactor = (1.0f + sin((pos.x / 733.0f) + (pos.z / 905.0f) + simplex_noise(pos / 1313.0f) * 2.0f)) / 2.0f;
+    float4 mat1 = float4(dirt, grass * lightFactor, grass - (grass * lightFactor), rock * lightFactor);
+    float4 mat2 = float4(rock - (rock * lightFactor), sand, 0, 0);
     
     output.material.x = (uint(mat1.x * 255.0f) << 24) |
                         (uint(mat1.y * 255.0f) << 16) |

@@ -72,7 +72,7 @@ private:
         boost::intrusive_ptr<ID3D11RasterizerState> rasterizerState;
         boost::intrusive_ptr<ID3D11DepthStencilState> depthStencilState;
         boost::intrusive_ptr<ID3D11BlendState> blendState;
-        std::array<boost::intrusive_ptr<ID3D11ShaderResourceView>, 4> textureViews;
+        std::array<boost::intrusive_ptr<ID3D11ShaderResourceView>, 8> textureViews;
         boost::intrusive_ptr<ID3D11SamplerState> samplerState;
         boost::intrusive_ptr<ID3D11DepthStencilState> transparentDepthStencilState;
         boost::intrusive_ptr<ID3D11DepthStencilState> fillGapsDepthStencilState;
