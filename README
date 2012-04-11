@@ -1,0 +1,9 @@
+To build, open the build/vc10/Nyx.sln solution in Visual Studio 2010 Professional Edition. (I have not tested it with the Express Edition, although in theory 32-bit builds should work.)
+
+You should have the following libraries installed (including configuring Visual Studio to find the headers and library files):
+    * Microsoft Windows SDK 7.1A
+    * Microsoft DirectX SDK (June 2010)
+    * boost 1.48.0
+    * freetype 2.4.8
+    
+A DirectX 11 class GPU is required.

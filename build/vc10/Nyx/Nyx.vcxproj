@@ -101,6 +101,7 @@
     <ClInclude Include="..\..\..\src\VoxelManager.h" />
     <ClInclude Include="..\..\..\src\VoxelProcessor.h" />
     <ClInclude Include="..\..\..\src\VoxelRenderer.h" />
+    <ClInclude Include="..\..\..\src\WaterRenderer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\Camera.cpp" />
@@ -120,6 +121,7 @@
     <ClCompile Include="..\..\..\src\VoxelManager.cpp" />
     <ClCompile Include="..\..\..\src\VoxelProcessor.cpp" />
     <ClCompile Include="..\..\..\src\VoxelRenderer.cpp" />
+    <ClCompile Include="..\..\..\src\WaterRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\assets\shaders\line_ps.hlsl" />
