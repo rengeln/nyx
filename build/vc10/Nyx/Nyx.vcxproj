@@ -143,6 +143,8 @@
     <None Include="..\..\..\assets\shaders\voxel_generator_vs.hlsl" />
     <None Include="..\..\..\assets\shaders\voxel_mesh_ps.hlsl" />
     <None Include="..\..\..\assets\shaders\voxel_mesh_vs.hlsl" />
+    <None Include="..\..\..\assets\shaders\water_ps.hlsl" />
+    <None Include="..\..\..\assets\shaders\water_vs.hlsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

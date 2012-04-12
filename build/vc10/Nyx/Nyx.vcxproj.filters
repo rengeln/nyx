@@ -180,5 +180,11 @@
     <None Include="..\..\..\assets\shaders\voxel_mesh_ps.hlsl">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="..\..\..\assets\shaders\water_vs.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\..\assets\shaders\water_ps.hlsl">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

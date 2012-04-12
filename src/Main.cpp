@@ -15,9 +15,9 @@
 
 const TCHAR* WindowClass = _T("Nyx");
 const TCHAR* WindowName = _T("Nyx");
-const DWORD WindowStyle = WS_POPUP; //WS_OVERLAPPEDWINDOW ^ WS_SIZEBOX;
-const size_t WindowWidth = 1920;
-const size_t WindowHeight = 1080;
+const DWORD WindowStyle = WS_OVERLAPPEDWINDOW ^ WS_SIZEBOX;
+const size_t WindowWidth = 1024;
+const size_t WindowHeight = 1768;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {

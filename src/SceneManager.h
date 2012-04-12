@@ -14,6 +14,7 @@
 class GraphicsDevice;
 class SkyRenderer;
 class VoxelManager;
+class WaterRenderer;
 
 class SceneManager : public boost::noncopyable
 {
@@ -59,6 +60,7 @@ private:
     GraphicsDevice& m_graphicsDevice;
     std::unique_ptr<VoxelManager> m_voxelManager;
     std::unique_ptr<SkyRenderer> m_skyRenderer;
+    std::unique_ptr<WaterRenderer> m_waterRenderer;
     Camera m_camera;
 };
 

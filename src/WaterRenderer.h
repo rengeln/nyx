@@ -33,6 +33,11 @@ public:
     void Draw();
 
 private:
+    struct Vertex
+    {
+        float3 xyz;
+    };
+
     //
     //  Generates the radial grid mesh.
     //
@@ -42,7 +47,7 @@ private:
     //      [out] indices
     //          Vector which will hold the generated indices.
     //
-    static void GenerateRadialGrid(std::vector<Vertex>& vertices,
+    static void GenerateRadialGrid(std::vector<struct Vertex>& vertices,
                                    std::vector<uint16_t>& indices);
 
     //
@@ -58,17 +63,12 @@ private:
         boost::intrusive_ptr<ID3D11RasterizerState> rasterizerState;
         boost::intrusive_ptr<ID3D11DepthStencilState> depthStencilState;
         boost::intrusive_ptr<ID3D11SamplerState> samplerState;
+        uint32_t indexCount;
     };
     struct ShaderConstants
     {
-        float4x4 viewMatrix;
-        float4x4 projectionMatrix;
+        float4x4 projectionViewMatrix;
     };
-    struct Vertex
-    {
-        float3 xyz;
-    };
-
     static std::weak_ptr<SharedProperties> m_sharedWeakPtr;
     std::shared_ptr<SharedProperties> m_shared;
     GraphicsDevice& m_graphicsDevice;
