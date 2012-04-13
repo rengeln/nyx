@@ -3,9 +3,7 @@
 //  See accompanying LICENSE file for full license information.
 ///////////////////////////////////////////////////////////////////////////////
 
-cbuffer SceneConstants {
-    row_major float4x4 ProjectionViewMatrix;
-};
+#include "water.h"
 
 struct VS_In {
 	float3 position : POSITION;
@@ -13,6 +11,7 @@ struct VS_In {
 
 struct VS_Out {
 	float4 position : SV_Position;
+    float3 worldPosition : TEXCOORD0;
 };
 
 //
@@ -20,7 +19,16 @@ struct VS_Out {
 //
 VS_Out main(VS_In input)
 {
-	VS_Out output;
-    output.position = mul(float4(input.position, 1.0f), ProjectionViewMatrix);
-	return output; 
+    VS_Out output;
+
+    output.worldPosition = input.position;
+    output.worldPosition.x += CameraPosition.x;
+    output.worldPosition.z += CameraPosition.z;
+
+    input.position.x += CameraPosition.x;
+    input.position.z += CameraPosition.z;
+    input.position.y += Displacement(output.worldPosition.xz) * 2.0f;
+    output.position = mul(float4(input.position, 1.0f), mul(ViewMatrix, ProjectionMatrix));
+    
+    return output; 
 }

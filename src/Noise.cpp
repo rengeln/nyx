@@ -165,3 +165,28 @@ float Noise::Sample(float x, float y, float z)
     float r = 32.0f * (n0 + n1 + n2 + n3);
     return r;
 }
+
+void Noise::Fill(float* ptr,
+                 size_t x,
+                 size_t y,
+                 size_t z,
+                 float xf,
+                 float yf,
+                 float zf)
+{
+    for (size_t i = 0; i < x; ++i)
+    {
+        for (size_t j = 0; j < y; ++j)
+        {
+            for (size_t k = 0; k < z; ++k)
+            {
+                *ptr++ = SampleRange(static_cast<float>(i) * xf,
+                                     static_cast<float>(j) * yf,
+                                     static_cast<float>(k) * zf,
+                                     0.0f,
+                                     1.0f);
+            }
+        }
+    }
+}
+

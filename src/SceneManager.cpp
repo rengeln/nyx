@@ -33,14 +33,14 @@ void SceneManager::SetCamera(const Camera& camera)
 
 void SceneManager::Update()
 {
-    m_voxelManager->Update();
+    //m_voxelManager->Update();
 }
 
 void SceneManager::Draw()
 {
     m_skyRenderer->SetCamera(m_camera);
     m_skyRenderer->Draw();
-    m_voxelManager->Draw(m_camera);
+    //m_voxelManager->Draw(m_camera);
     m_waterRenderer->SetCamera(m_camera);
     m_waterRenderer->Draw();
 }

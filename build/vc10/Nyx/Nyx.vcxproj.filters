@@ -74,6 +74,9 @@
     <ClInclude Include="..\..\..\src\WaterRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\assets\shaders\water.h">
+      <Filter>Shader Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\Prefix.cpp">

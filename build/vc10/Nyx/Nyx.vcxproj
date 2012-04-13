@@ -85,6 +85,7 @@
     <ClInclude Include="..\..\..\assets\shaders\marching_cubes.h" />
     <ClInclude Include="..\..\..\assets\shaders\simplex_noise.h" />
     <ClInclude Include="..\..\..\assets\shaders\voxel_mesh.h" />
+    <ClInclude Include="..\..\..\assets\shaders\water.h" />
     <ClInclude Include="..\..\..\src\Camera.h" />
     <ClInclude Include="..\..\..\src\Font.h" />
     <ClInclude Include="..\..\..\src\GraphicsDevice.h" />

@@ -33,6 +33,19 @@ public:
     //
     float SampleRange(float x, float y, float z, float a, float b);
 
+    //
+    //  Fills a 3D grid with noise.
+    //
+    //  Parameters:
+    //      [in] ptr
+    //          Pointer to the destination grid.
+    //      [in] x, y, z
+    //          Grid dimensions.
+    //      [in] xf, yf, zf
+    //          Frequency to sample in each direction.
+    //
+    void Fill(float* ptr, size_t x, size_t y, size_t z, float xf, float yf, float zf);
+
 private:
     //
     //  Properties.

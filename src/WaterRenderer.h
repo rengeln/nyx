@@ -64,17 +64,23 @@ private:
         boost::intrusive_ptr<ID3D11DepthStencilState> depthStencilState;
         boost::intrusive_ptr<ID3D11SamplerState> samplerState;
         boost::intrusive_ptr<ID3D11BlendState> blendState;
+        boost::intrusive_ptr<ID3D11ShaderResourceView> noiseTextureView;
+        boost::intrusive_ptr<ID3D11SamplerState> noiseSampler;
         uint32_t indexCount;
     };
     struct ShaderConstants
     {
-        float4x4 projectionViewMatrix;
+        float4x4 viewMatrix;
+        float4x4 projectionMatrix;
+        float4   cameraPosition;
+        float4   offset;
     };
     static std::weak_ptr<SharedProperties> m_sharedWeakPtr;
     std::shared_ptr<SharedProperties> m_shared;
     GraphicsDevice& m_graphicsDevice;
     ShaderConstants m_shaderConstants;
     boost::intrusive_ptr<ID3D11Buffer> m_constantBuffer;
+    float m_time;
 };
 
 #endif  //  __NYX_WATERRENDERER_H__

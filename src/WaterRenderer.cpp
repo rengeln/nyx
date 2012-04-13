@@ -6,6 +6,7 @@
 #include "Prefix.h"
 #include "Camera.h"
 #include "GraphicsDevice.h"
+#include "Noise.h"
 #include "WaterRenderer.h"
 
 std::weak_ptr<WaterRenderer::SharedProperties> WaterRenderer::m_sharedWeakPtr;
@@ -88,8 +89,8 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         D3D11_RASTERIZER_DESC rasterizerDesc =
         {
             D3D11_FILL_SOLID,                                               //  FillMode
-            D3D11_CULL_NONE,                                                //  CullMode
-            FALSE,                                                          //  FrontCounterClockwise
+            D3D11_CULL_BACK,                                                //  CullMode
+            TRUE,                                                           //  FrontCounterClockwise
             0.0f,                                                           //  DepthBias
             0.0f,                                                           //  DepthBiasClamp
             0.0f,                                                           //  SlopeScaledDepthBias
@@ -105,7 +106,7 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         D3D11_DEPTH_STENCIL_DESC depthStencilDesc = 
         {
             TRUE,                                                           //  DepthEnable
-            D3D11_DEPTH_WRITE_MASK_ZERO,                                    //  DepthWriteMask
+            D3D11_DEPTH_WRITE_MASK_ALL,                                     //  DepthWriteMask
             D3D11_COMPARISON_LESS,                                          //  ComparisonFunc
             FALSE,                                                          //  StencilEnable
             0,                                                              //  StencilReadMask
@@ -132,10 +133,10 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         //
         D3D11_BLEND_DESC blendDesc =
         {
-            FALSE,                                                           //  AlphaToCoverageEnable
+            FALSE,                                                          //  AlphaToCoverageEnable
             FALSE,                                                          //  IndependentBlendEnable
             {{                                                              //  RenderTarget[0]
-                TRUE,                                                       //      BlendEnable
+                FALSE,                                                       //      BlendEnable
                 D3D11_BLEND_SRC_ALPHA,                                      //      SrcBlend
                 D3D11_BLEND_INV_SRC_ALPHA,                                  //      DestBlend
                 D3D11_BLEND_OP_ADD,                                         //      BlendOp
@@ -193,6 +194,73 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateBuffer(&indexBufferDesc,
                                                               &indexBufferData,
                                                               AttachPtr(m_shared->indexBuffer)));
+
+        //
+        //  Create the noise texture.
+        //
+        std::vector<float> noiseData(256 * 256);
+        Noise n;
+        n.Fill(noiseData.data(), 256, 256, 1, 0.1f, 0.1f, 1.0f);
+
+        D3D11_SUBRESOURCE_DATA noiseTextureData =
+        {
+            noiseData.data(),                                               //  pSysMem
+            sizeof(float) * 256,                                            //  SysMemPitch
+            0,                                                              //  SysMemSlicePitch
+        };
+        D3D11_TEXTURE2D_DESC noiseTextureDesc =
+        {
+            256,                                                            //  Width
+            256,                                                            //  Height
+            1,                                                              //  MipLevels
+            1,                                                              //  ArraySize
+            DXGI_FORMAT_R32_FLOAT,                                          //  Format
+            {                                                               //  SampleDesc
+                1,                                                          //      Count
+                0                                                           //      Quality
+            },
+            D3D11_USAGE_IMMUTABLE,                                          //  Usage
+            D3D11_BIND_SHADER_RESOURCE,                                     //  BindFlags
+            0,                                                              //  CPUAccessFlags
+            0                                                               //  MiscFlags
+        };
+        boost::intrusive_ptr<ID3D11Texture2D> noiseTexture;
+        D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateTexture2D(&noiseTextureDesc,
+                                                                 &noiseTextureData,
+                                                                 AttachPtr(noiseTexture)));
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC noiseSRVDesc =
+        {
+            DXGI_FORMAT_R32_FLOAT,                                          //  Format
+            D3D11_SRV_DIMENSION_TEXTURE2D,                                  //  ViewDimension
+            {                                                               //  Texture2D
+                0,                                                          //      MostDetailedMip
+                -1                                                          //      MipLevels
+            }
+        };
+        D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateShaderResourceView(noiseTexture.get(),
+                                                                          &noiseSRVDesc,
+                                                                          AttachPtr(m_shared->noiseTextureView)));
+
+        //
+        //  Create the sampler for the noise texture.
+        //
+        D3D11_SAMPLER_DESC noiseSamplerDesc =
+        {
+            D3D11_FILTER_MIN_MAG_MIP_LINEAR,                                //  Filter
+            D3D11_TEXTURE_ADDRESS_MIRROR,                                     //  AddressU
+            D3D11_TEXTURE_ADDRESS_MIRROR,                                     //  AddressV
+            D3D11_TEXTURE_ADDRESS_MIRROR,                                     //  AddressW
+            0.0f,                                                           //  MaxLODBias
+            0,                                                              //  MaxAnisotropy
+            D3D11_COMPARISON_ALWAYS,                                        //  ComparisonFunc
+            {0, 0, 0, 0},                                                   //  BorderColor
+            -FLT_MAX,                                                       //  MinLOD
+            FLT_MAX                                                         //  MaxLOD
+        };
+        D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateSamplerState(&noiseSamplerDesc,
+                                                                    AttachPtr(m_shared->noiseSampler)));    
+                                                                 
     }
 
     //
@@ -211,6 +279,7 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
                                         &constantBufferDesc,
                                         NULL,
                                         AttachPtr(m_constantBuffer)));
+    m_time = 0;
 }
 
 WaterRenderer::~WaterRenderer()
@@ -220,19 +289,19 @@ WaterRenderer::~WaterRenderer()
 void WaterRenderer::GenerateRadialGrid(std::vector<Vertex>& vertices,
                                        std::vector<uint16_t>& indices)
 {
-    const size_t M = 32, N = 64;
-    const float MinRadius = 0.1f, DeltaRadius = 0.1f;
+    const size_t M = 256, N = 64;
+    const float MinRadius = 1.0f, DeltaRadius = 0.05f;
 
     vertices.reserve(1 + (M * N));
 
     Vertex c;
     c.xyz = float3(0, 1000.0f, 0);
     vertices.push_back(c);
-    indices.push_back(0);
 
     //  indices for the inner ring
     for (size_t j = 0; j < M; ++j)
     {
+        indices.push_back(0);
         indices.push_back(1 + j);
     }
     
@@ -253,29 +322,25 @@ void WaterRenderer::GenerateRadialGrid(std::vector<Vertex>& vertices,
                 indices.push_back(1 + ((i + 1) * M) + j);
             }
         }
-        if (i < N - 1)
-        {
-            indices.push_back(1 + (i * M));
-            indices.push_back(1 + ((i + 1) * M));
-        }
     }
 }
 
 
 void WaterRenderer::SetCamera(const Camera& camera)
 {
-    Camera centered = camera;
-    float3 pos = centered.GetPosition();
-    pos.x = 0.0f;
-    pos.z = 0.0f;
-    centered.SetPosition(pos);
-    m_shaderConstants.projectionViewMatrix = centered.GetCombinedMatrix();
+    m_shaderConstants.viewMatrix = camera.GetViewMatrix();
+    m_shaderConstants.projectionMatrix = camera.GetProjectionMatrix();
+    m_shaderConstants.cameraPosition = camera.GetPosition();
 }
 
 void WaterRenderer::Draw()
 {
     ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
 
+    m_time += 0.1f;
+    m_shaderConstants.offset.x = m_time * 1.35f;
+    //m_shaderConstants.offset = float4::Replicate(0);
+    
     //
     //  Update the constant buffer.
     //
@@ -294,6 +359,14 @@ void WaterRenderer::Draw()
     ID3D11Buffer* vertexBufferPtr = m_shared->vertexBuffer.get();
     size_t offset = 0,
            stride = sizeof(Vertex);
+    ID3D11ShaderResourceView* srvs[] =
+    {
+        m_shared->noiseTextureView.get()
+    };
+    ID3D11SamplerState* samplers[] =
+    {
+        m_shared->noiseSampler.get()
+    };
 
     context.IASetVertexBuffers(0, 1, &vertexBufferPtr, &stride, &offset);
     context.IASetIndexBuffer(m_shared->indexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
@@ -301,12 +374,16 @@ void WaterRenderer::Draw()
     context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     
     ID3D11Buffer* constantBufferPtr = m_constantBuffer.get();
+    context.VSSetShaderResources(0, sizeof(srvs) / sizeof(srvs[0]), srvs);
+    context.VSSetSamplers(0, sizeof(samplers) / sizeof(samplers[0]), samplers);
     context.VSSetConstantBuffers(0, 1, &constantBufferPtr);
     context.VSSetShader(m_shared->vertexShader.get(), NULL, 0);
     
     context.GSSetShader(NULL, NULL, 0);
 
     context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
+    context.PSSetShaderResources(0, sizeof(srvs) / sizeof(srvs[0]), srvs);
+    context.PSSetSamplers(0, sizeof(samplers) / sizeof(samplers[0]), samplers);
     
     context.RSSetState(m_shared->rasterizerState.get());
 
