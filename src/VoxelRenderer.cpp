@@ -178,11 +178,11 @@ VoxelRenderer::VoxelRenderer(GraphicsDevice& graphicsDevice)
             D3D11_COMPARISON_LESS,                                          //  ComparisonFunc
             TRUE,                                                           //  StencilEnable
             0xFF,                                                           //  StencilReadMask
-            0xFF,                                                           //  StencilWriteMask
+            0,                                                              //  StencilWriteMask
             {                                                               //  FrontFace
                 D3D11_STENCIL_OP_KEEP,                                      //      StencilFailOp
                 D3D11_STENCIL_OP_KEEP,                                      //      StencilDepthFailOp
-                D3D11_STENCIL_OP_INCR_SAT,                                  //      StencilPassOp
+                D3D11_STENCIL_OP_KEEP,                                      //      StencilPassOp
                 D3D11_COMPARISON_EQUAL                                      //      StencilFunc
             },
             {                                                               //  BackFace
@@ -198,7 +198,7 @@ VoxelRenderer::VoxelRenderer(GraphicsDevice& graphicsDevice)
 
         D3D11_BLEND_DESC blendDesc =
         {
-            TRUE,                                                           //  AlphaToCoverageEnable
+            FALSE,                                                           //  AlphaToCoverageEnable
             FALSE,                                                          //  IndependentBlendEnable
             {{                                                              //  RenderTarget[0]
                 TRUE,                                                       //      BlendEnable
@@ -218,12 +218,12 @@ VoxelRenderer::VoxelRenderer(GraphicsDevice& graphicsDevice)
         //
         const char* paths[] =
         {
-            "assets/textures/BlackStar.png",
+            "assets/textures/rock.jpg",
             "assets/textures/dark_grass.png",
             "assets/textures/Grass_1.png",
             "assets/textures/dirt.jpg",
             "assets/textures/pjrock21.jpg",
-            "assets/textures/rock.jpg",
+            "assets/textures/darkrock.png",
             "assets/textures/sand.png"
         };
         for (size_t i = 0; i < sizeof(paths) / sizeof(paths[0]); i++)
@@ -293,7 +293,8 @@ void VoxelRenderer::Draw(const VoxelMesh& geometry, float3 position)
         &geometry,
         position,
         dist2,
-        1.0f
+        1.0f,
+        true
     };
     m_renderOps.push_back(op);
 }
@@ -307,7 +308,8 @@ void VoxelRenderer::DrawGapFiller(const VoxelMesh& geometry, float3 position)
         &geometry,
         position,
         dist2,
-        1.0f
+        1.0f,
+        true
     };
     m_gapFillerRenderOps.push_back(op);    
 }
@@ -321,7 +323,8 @@ void VoxelRenderer::DrawTransparent(const VoxelMesh& geometry, float3 position, 
         &geometry,
         position,
         dist2,
-        alpha
+        alpha,
+        false
     };
     m_transparentRenderOps.push_back(op);    
 }
@@ -330,11 +333,11 @@ void VoxelRenderer::Flush()
 {
     auto transparentSorter = [](const RenderOp& lhs, const RenderOp& rhs)
     {
-        return lhs.distance2 < rhs.distance2;
+        return lhs.distance2 > rhs.distance2;
     };
     auto opaqueSorter = [](const RenderOp& lhs, const RenderOp& rhs)
     {
-        return lhs.distance2 > rhs.distance2;
+        return lhs.distance2 < rhs.distance2;
     };
     
     std::sort(m_renderOps.begin(), m_renderOps.end(), opaqueSorter);
@@ -343,35 +346,32 @@ void VoxelRenderer::Flush()
     
     for (size_t i = 0; i < m_renderOps.size(); i++)
     {
-        DrawImmediate(*m_renderOps[i].geometry, m_renderOps[i].position);
+        Draw(m_renderOps[i]);
     }
     m_renderOps.clear();
 
-    for (size_t i = 0; i < m_gapFillerRenderOps.size(); i++)
+    for (size_t i = 0; i < m_gapFillerRenderOps.size(); ++i)
     {
-        DrawGapFillerImmediate(*m_gapFillerRenderOps[i].geometry, m_gapFillerRenderOps[i].position);
+        Draw(m_gapFillerRenderOps[i]);
     }
     m_gapFillerRenderOps.clear();
 
     for (size_t i = 0; i < m_transparentRenderOps.size(); i++)
     {
-        DrawTransparentImmediate(*m_transparentRenderOps[i].geometry, 
-                          m_transparentRenderOps[i].position, 
-                          m_transparentRenderOps[i].alpha);
+        Draw(m_transparentRenderOps[i]);
     }
     m_transparentRenderOps.clear();
 }
 
-void VoxelRenderer::DrawImmediate(const VoxelMesh& geometry,
-                         float3 position)
+void VoxelRenderer::Draw(const RenderOp& op)
 {
     ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
 
     //
     //  Update the constant buffer.
     //
-    m_constants.worldMatrix = float4x4::Translation(position);
-    m_constants.alpha[0] = 1.0f;
+    m_constants.worldMatrix = float4x4::Translation(op.position);
+    m_constants.alpha[0] = op.alpha;
 
     D3D11_MAPPED_SUBRESOURCE map;
     D3DCHECK(m_graphicsDevice.GetD3DContext().Map(m_constantBuffer.get(),   //  pResource
@@ -385,7 +385,7 @@ void VoxelRenderer::DrawImmediate(const VoxelMesh& geometry,
     //
     //  Execute the render op.
     //
-    ID3D11Buffer* vertexBufferPtr = geometry.GetVertexBuffer();
+    ID3D11Buffer* vertexBufferPtr = op.geometry->GetVertexBuffer();
     size_t offset = 0,
            stride = sizeof(VoxelMesh::Vertex);
     ID3D11ShaderResourceView* shaderResourceViewPtrs[] =
@@ -401,7 +401,7 @@ void VoxelRenderer::DrawImmediate(const VoxelMesh& geometry,
     ID3D11SamplerState* samplerPtr = m_shared->samplerState.get();
 
     context.IASetVertexBuffers(0, 1, &vertexBufferPtr, &stride, &offset);
-    context.IASetIndexBuffer(geometry.GetIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
+    context.IASetIndexBuffer(op.geometry->GetIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
     context.IASetInputLayout(m_shared->inputLayout.get());
     context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -417,133 +417,27 @@ void VoxelRenderer::DrawImmediate(const VoxelMesh& geometry,
     context.PSSetSamplers(0, 1, &samplerPtr);
 
     context.RSSetState(m_shared->rasterizerState.get());
-    context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
 
-    context.DrawIndexed(geometry.GetIndexCount(), 0, 0);   
-}
-
-void VoxelRenderer::DrawTransparentImmediate(const VoxelMesh& geometry,
-                                             float3 position,
-                                             float alpha)
-{
-    ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
-
-    //
-    //  Update the constant buffer.
-    //
-    m_constants.worldMatrix = float4x4::Translation(position);
-    m_constants.alpha[0] = alpha;
-
-    D3D11_MAPPED_SUBRESOURCE map;
-    D3DCHECK(m_graphicsDevice.GetD3DContext().Map(m_constantBuffer.get(),   //  pResource
-                                                 0,                         //  Subresource
-                                                 D3D11_MAP_WRITE_DISCARD,   //  MapType
-                                                 0,                         //  MapFlags
-                                                 &map));                    //  pMappedResource
-    memcpy(map.pData, &m_constants, sizeof(m_constants));
-    m_graphicsDevice.GetD3DContext().Unmap(m_constantBuffer.get(), 0);
-
-    //
-    //  Execute the render op.
-    //
-    ID3D11Buffer* vertexBufferPtr = geometry.GetVertexBuffer();
-    size_t offset = 0,
-           stride = sizeof(VoxelMesh::Vertex);
-    ID3D11ShaderResourceView* shaderResourceViewPtrs[] =
+    if (op.gapFiller)
     {
-        m_shared->textureViews[0].get(),
-        m_shared->textureViews[1].get(),
-        m_shared->textureViews[2].get(),
-        m_shared->textureViews[3].get(),
-        m_shared->textureViews[4].get(),
-        m_shared->textureViews[5].get(),
-        m_shared->textureViews[6].get()
-    };
-    ID3D11SamplerState* samplerPtr = m_shared->samplerState.get();
+            context.OMSetDepthStencilState(m_shared->fillGapsDepthStencilState.get(), 0);
+    }
+    else
+    {
+        if (op.alpha == 1.0f)
+        {
+            context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
+        }
+        else
+        {
+            context.OMSetDepthStencilState(m_shared->transparentDepthStencilState.get(), 0);
 
-    context.IASetVertexBuffers(0, 1, &vertexBufferPtr, &stride, &offset);
-    context.IASetIndexBuffer(geometry.GetIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
-    context.IASetInputLayout(m_shared->inputLayout.get());
-    context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            const float blendFactor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            context.OMSetBlendState(m_shared->blendState.get(), NULL, 0xFFFFFFFF);
+        }
+    }
 
-    ID3D11Buffer* constantBufferPtr = m_constantBuffer.get();
-    context.VSSetConstantBuffers(0, 1, &constantBufferPtr);
-    context.VSSetShader(m_shared->vertexShader.get(), NULL, 0);
+    context.DrawIndexed(op.geometry->GetIndexCount(), 0, 0);  
 
-    context.GSSetShader(NULL, NULL, 0);
-
-    context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
-    context.PSSetConstantBuffers(0, 1, &constantBufferPtr);
-    context.PSSetShaderResources(0, 7, shaderResourceViewPtrs);
-    context.PSSetSamplers(0, 1, &samplerPtr);
-
-    context.RSSetState(m_shared->rasterizerState.get());
-    context.OMSetDepthStencilState(m_shared->transparentDepthStencilState.get(), 0);
-
-    const float blendFactor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    context.OMSetBlendState(m_shared->blendState.get(), NULL, 0xFFFFFFFF);
-
-    context.DrawIndexed(geometry.GetIndexCount(), 0, 0);
-    
     context.OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
-}
-
-void VoxelRenderer::DrawGapFillerImmediate(const VoxelMesh& geometry,
-                                           float3 position)
-{
-    ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
-
-    //
-    //  Update the constant buffer.
-    //
-    m_constants.worldMatrix = float4x4::Translation(position);
-    m_constants.alpha[0] = 1.0f;
-
-    D3D11_MAPPED_SUBRESOURCE map;
-    D3DCHECK(m_graphicsDevice.GetD3DContext().Map(m_constantBuffer.get(),   //  pResource
-                                                 0,                         //  Subresource
-                                                 D3D11_MAP_WRITE_DISCARD,   //  MapType
-                                                 0,                         //  MapFlags
-                                                 &map));                    //  pMappedResource
-    memcpy(map.pData, &m_constants, sizeof(m_constants));
-    m_graphicsDevice.GetD3DContext().Unmap(m_constantBuffer.get(), 0);
-
-    //
-    //  Execute the render op.
-    //
-    ID3D11Buffer* vertexBufferPtr = geometry.GetVertexBuffer();
-    size_t offset = 0,
-           stride = sizeof(VoxelMesh::Vertex);
-    ID3D11ShaderResourceView* shaderResourceViewPtrs[] =
-    {
-        m_shared->textureViews[0].get(),
-        m_shared->textureViews[1].get(),
-        m_shared->textureViews[2].get(),
-        m_shared->textureViews[3].get(),
-        m_shared->textureViews[4].get(),
-        m_shared->textureViews[5].get(),
-        m_shared->textureViews[6].get()
-    };
-    ID3D11SamplerState* samplerPtr = m_shared->samplerState.get();
-
-    context.IASetVertexBuffers(0, 1, &vertexBufferPtr, &stride, &offset);
-    context.IASetIndexBuffer(geometry.GetIndexBuffer(), DXGI_FORMAT_R16_UINT, 0);
-    context.IASetInputLayout(m_shared->inputLayout.get());
-    context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-    ID3D11Buffer* constantBufferPtr = m_constantBuffer.get();
-    context.VSSetConstantBuffers(0, 1, &constantBufferPtr);
-    context.VSSetShader(m_shared->vertexShader.get(), NULL, 0);
-
-    context.GSSetShader(NULL, NULL, 0);
-
-    context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
-    context.PSSetConstantBuffers(0, 1, &constantBufferPtr);
-    context.PSSetShaderResources(0, 7, shaderResourceViewPtrs);
-    context.PSSetSamplers(0, 1, &samplerPtr);
-
-    context.RSSetState(m_shared->rasterizerState.get());
-    context.OMSetDepthStencilState(m_shared->fillGapsDepthStencilState.get(), 0);
-
-    context.DrawIndexed(geometry.GetIndexCount(), 0, 0);  
 }

@@ -13,8 +13,8 @@ sampler MaterialSampler;
 texture2D MaterialTextures[8];
 
 static const float3 LightDirection = {0.5f, -0.5, 0.5f};
-static const float3 LightColor = {0.6f, 0.6f, 0.6f};
-static const float3 AmbientColor = {0.3f, 0.3f, 0.3f};
+static const float3 LightColor = {0.8f, 0.6f, 0.4f};
+static const float3 AmbientColor = {0.0f, 0.2f, 0.2f};
 
 //
 //  Mapping of material IDs to textures in the X, Y, and Z projections.
@@ -26,7 +26,7 @@ static const uint3 MaterialToTexture[8] =
 	{4, 2, 4},          //  GRASS (light)
 	{4, 3, 4},          //  ROCK (dark)
 	{5, 3, 5},          //  ROCK (light)
-	{5, 6, 5},          //  SAND
+	{0, 6, 0},          //  SAND
 	{0, 0, 0},
 	{0, 0, 0}
 };

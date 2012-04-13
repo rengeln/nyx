@@ -54,7 +54,7 @@ GraphicsDevice::GraphicsDevice(HWND hwnd)
             DXGI_MODE_SCALING_UNSPECIFIED                   //      Scaling
         },
         {                                                   //  SampleDesc
-            4,                                              //      Count
+            1,                                              //      Count
             0,                                              //      Quality
         },
         DXGI_USAGE_BACK_BUFFER |                            //  Usage
@@ -97,9 +97,9 @@ GraphicsDevice::GraphicsDevice(HWND hwnd)
         wndRect.bottom - wndRect.top,                       //  Height
         1,                                                  //  MipLevels
         1,                                                  //  ArraySize
-        DXGI_FORMAT_D24_UNORM_S8_UINT,                      //  Format
+        DXGI_FORMAT_D24_UNORM_S8_UINT ,                     //  Format
         {                                                   //  SampleDesc
-            4,                                              //      Count
+            1,                                              //      Count
             0                                               //      Quality
         },
         D3D11_USAGE_DEFAULT,                                //  Usage
@@ -113,7 +113,7 @@ GraphicsDevice::GraphicsDevice(HWND hwnd)
 
     D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc =
     {   
-        DXGI_FORMAT_D24_UNORM_S8_UINT,                      //  Format
+       DXGI_FORMAT_D24_UNORM_S8_UINT,                      //  Format
         D3D11_DSV_DIMENSION_TEXTURE2DMS,                      //  ViewDimension
         0,                                                  //  Flags
         {                                                   //  Texture2D

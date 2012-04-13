@@ -63,6 +63,7 @@ private:
         boost::intrusive_ptr<ID3D11RasterizerState> rasterizerState;
         boost::intrusive_ptr<ID3D11DepthStencilState> depthStencilState;
         boost::intrusive_ptr<ID3D11SamplerState> samplerState;
+        boost::intrusive_ptr<ID3D11BlendState> blendState;
         uint32_t indexCount;
     };
     struct ShaderConstants

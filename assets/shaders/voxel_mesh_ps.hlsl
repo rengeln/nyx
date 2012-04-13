@@ -37,13 +37,13 @@ PS_Out main(PS_In input)
     //  To avoid artifacts caused by repeating each texture is sampled twice at non-synchronous
     //  repeat values, then blended together.
     //
-    float2 coord1 = input.worldPos.zy / 12.0f;  
-    float2 coord2 = input.worldPos.zx / 11.0f;  
-    float2 coord3 = input.worldPos.xy / 13.0f; 
+    float2 coord1 = input.worldPos.zy / 12.131f;  
+    float2 coord2 = input.worldPos.zx / 11.371f;  
+    float2 coord3 = input.worldPos.xy / 13.129f; 
 
-	float2 coord4 = input.worldPos.zy / 253.0f;
-	float2 coord5 = input.worldPos.zx / 271.0f;
-	float2 coord6 = input.worldPos.xy / 233.0f;
+	float2 coord4 = input.worldPos.zy / 253.189f;
+	float2 coord5 = input.worldPos.zx / 271.47f;
+	float2 coord6 = input.worldPos.xy / 233.731f;
 
 	float3 blendColor = float3(0, 0, 0);
 	float materialWeights[8] =
@@ -68,14 +68,13 @@ PS_Out main(PS_In input)
 		float3 color = MaterialTextures[index.x].Sample(MaterialSampler, coord1).xyz * blend_weights.xxx +
 					   MaterialTextures[index.y].Sample(MaterialSampler, coord2).xyz * blend_weights.yyy +
 					   MaterialTextures[index.z].Sample(MaterialSampler, coord3).xyz * blend_weights.zzz;
-		blendColor += color * (materialWeights[i] * 0.5f);
-			
+		blendColor += color * (materialWeights[i] * 1.0f);
 			
 		color = MaterialTextures[index.x].Sample(MaterialSampler, coord4).xyz * blend_weights.xxx +
 				MaterialTextures[index.y].Sample(MaterialSampler, coord5).xyz * blend_weights.yyy +
 				MaterialTextures[index.z].Sample(MaterialSampler, coord6).xyz * blend_weights.zzz;
 		blendColor += color * (materialWeights[i] * 0.5f);
-	}
+    }
 
     //
     //  Extremely simple lighting calculation.

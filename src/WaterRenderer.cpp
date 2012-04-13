@@ -87,10 +87,10 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         //
         D3D11_RASTERIZER_DESC rasterizerDesc =
         {
-            D3D11_FILL_WIREFRAME,                                           //  FillMode
+            D3D11_FILL_SOLID,                                               //  FillMode
             D3D11_CULL_NONE,                                                //  CullMode
             FALSE,                                                          //  FrontCounterClockwise
-            0,                                                              //  DepthBias
+            0.0f,                                                           //  DepthBias
             0.0f,                                                           //  DepthBiasClamp
             0.0f,                                                           //  SlopeScaledDepthBias
             FALSE,                                                          //  DepthClipEnable
@@ -106,7 +106,7 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         {
             TRUE,                                                           //  DepthEnable
             D3D11_DEPTH_WRITE_MASK_ZERO,                                    //  DepthWriteMask
-            D3D11_COMPARISON_LESS_EQUAL,                                    //  ComparisonFunc
+            D3D11_COMPARISON_LESS,                                          //  ComparisonFunc
             FALSE,                                                          //  StencilEnable
             0,                                                              //  StencilReadMask
             0,                                                              //  StencilWriteMask
@@ -114,7 +114,7 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
                 D3D11_STENCIL_OP_KEEP,                                      //      StencilFailOp
                 D3D11_STENCIL_OP_KEEP,                                      //      StencilDepthFailOp
                 D3D11_STENCIL_OP_KEEP,                                      //      StencilPassOp
-                D3D11_COMPARISON_NEVER,                                     //      StencilFunc
+                D3D11_COMPARISON_ALWAYS,                                    //      StencilFunc
             },
             {                                                               //  BackFace
                 D3D11_STENCIL_OP_KEEP,                                      //      StencilFailOp
@@ -126,6 +126,27 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateDepthStencilState(
                                         &depthStencilDesc,
                                         AttachPtr(m_shared->depthStencilState)));
+
+        //
+        //  Create the blend state object.
+        //
+        D3D11_BLEND_DESC blendDesc =
+        {
+            FALSE,                                                           //  AlphaToCoverageEnable
+            FALSE,                                                          //  IndependentBlendEnable
+            {{                                                              //  RenderTarget[0]
+                TRUE,                                                       //      BlendEnable
+                D3D11_BLEND_SRC_ALPHA,                                      //      SrcBlend
+                D3D11_BLEND_INV_SRC_ALPHA,                                  //      DestBlend
+                D3D11_BLEND_OP_ADD,                                         //      BlendOp
+                D3D11_BLEND_ZERO,                                           //      SrcBlendAlpha
+                D3D11_BLEND_ZERO,                                           //      DestBlendAlpha
+                D3D11_BLEND_OP_ADD,                                         //      BlendOpAlpha
+                D3D11_COLOR_WRITE_ENABLE_ALL                                //      RenderTargetWriteMask
+            }}
+        };
+        D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateBlendState(&blendDesc,
+                                                                  AttachPtr(m_shared->blendState)));
 
         //
         //  Create the vertex and index buffers.
@@ -199,13 +220,13 @@ WaterRenderer::~WaterRenderer()
 void WaterRenderer::GenerateRadialGrid(std::vector<Vertex>& vertices,
                                        std::vector<uint16_t>& indices)
 {
-    const size_t M = 128, N = 128;
-    const float MinRadius = 0.1f, DeltaRadius = 0.05f;
+    const size_t M = 32, N = 64;
+    const float MinRadius = 0.1f, DeltaRadius = 0.1f;
 
     vertices.reserve(1 + (M * N));
 
     Vertex c;
-    c.xyz = float3::Replicate(0);
+    c.xyz = float3(0, 1000.0f, 0);
     vertices.push_back(c);
     indices.push_back(0);
 
@@ -215,22 +236,28 @@ void WaterRenderer::GenerateRadialGrid(std::vector<Vertex>& vertices,
         indices.push_back(1 + j);
     }
     
-    for (size_t i = 0; i < (N - 1); ++i)
+    for (size_t i = 0; i < N; ++i)
     {
         for (size_t j = 0; j < M; ++j)
         {
             float r = MinRadius + (DeltaRadius * (i * i * i));
             Vertex v;
             v.xyz = float3(r * cos(2.0f * XM_PI * j / M),
-                           0.0f,
+                           1000.0f,
                            r * sin(2.0f * XM_PI * j / M));
             vertices.push_back(v);
 
-            indices.push_back(1 + (i * M) + j);
-            indices.push_back(1 + ((i + 1) * M) + j);
+            if (i < N - 1)
+            {
+                indices.push_back(1 + (i * M) + j);
+                indices.push_back(1 + ((i + 1) * M) + j);
+            }
         }
-        indices.push_back(1 + (i * M));
-        indices.push_back(1 + ((i + 1) * M));
+        if (i < N - 1)
+        {
+            indices.push_back(1 + (i * M));
+            indices.push_back(1 + ((i + 1) * M));
+        }
     }
 }
 
@@ -272,17 +299,22 @@ void WaterRenderer::Draw()
     context.IASetIndexBuffer(m_shared->indexBuffer.get(), DXGI_FORMAT_R16_UINT, 0);
     context.IASetInputLayout(m_shared->inputLayout.get());
     context.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-
+    
     ID3D11Buffer* constantBufferPtr = m_constantBuffer.get();
     context.VSSetConstantBuffers(0, 1, &constantBufferPtr);
     context.VSSetShader(m_shared->vertexShader.get(), NULL, 0);
-
+    
     context.GSSetShader(NULL, NULL, 0);
 
     context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
-
+    
     context.RSSetState(m_shared->rasterizerState.get());
-    context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
 
+    const float blendFactor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    context.OMSetBlendState(m_shared->blendState.get(), NULL, 0xFFFFFFFF);
+    context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
+    
     context.DrawIndexed(m_shared->indexCount, 0, 0);
+
+    context.OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
 }

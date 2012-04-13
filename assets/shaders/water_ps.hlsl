@@ -17,6 +17,6 @@ struct PS_In {
 PS_Out main(PS_In input)
 {
     PS_Out output;
-    output.color = float4(1.0f, 0.0f, 0.0f, 1.0f);
+    output.color = float4(0.0f, 0.1f, 0.3f, 0.7f);
     return output;
 }

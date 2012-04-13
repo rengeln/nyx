@@ -54,12 +54,19 @@ public:
     void Flush();
 
 private:
+    struct RenderOp
+    {
+        const VoxelMesh* geometry;
+        float3 position;
+        float distance2;
+        float alpha;
+        bool gapFiller;
+    };
+
     //
     //  Implements the actual drawing of voxel meshes.
     //
-    void DrawImmediate(const VoxelMesh& geometry, float3 position);
-    void DrawTransparentImmediate(const VoxelMesh& geometry, float3 position, float alpha);
-    void DrawGapFillerImmediate(const VoxelMesh& geometry, float3 position);
+    void Draw(const RenderOp& renderOp);
 
     //
     //  Properties.
@@ -82,13 +89,6 @@ private:
         float4x4 projectionViewMatrix;
         float4x4 worldMatrix;
         float4 alpha;
-    };
-    struct RenderOp
-    {
-        const VoxelMesh* geometry;
-        float3 position;
-        float distance2;
-        float alpha;
     };
     static std::weak_ptr<SharedProperties> m_sharedWeakPtr;
     std::shared_ptr<SharedProperties> m_shared;

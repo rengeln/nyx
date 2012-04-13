@@ -13,12 +13,10 @@
 SceneManager::SceneManager(GraphicsDevice& graphicsDevice)
 : m_graphicsDevice(graphicsDevice)
 {
-    /*
     m_voxelManager.reset(new VoxelManager(m_graphicsDevice,
-                                          5,
+                                          4,
                                           float3(2048.0f, 2048.0f, 2048.0f),
                                           24000.0f));
-    */
     m_skyRenderer.reset(new SkyRenderer(m_graphicsDevice));
     m_waterRenderer.reset(new WaterRenderer(m_graphicsDevice));
 }
@@ -30,19 +28,19 @@ SceneManager::~SceneManager()
 void SceneManager::SetCamera(const Camera& camera)
 {
     m_camera = camera;
-    //m_voxelManager->SetCamera(m_camera);
+    m_voxelManager->SetCamera(m_camera);
 }
 
 void SceneManager::Update()
 {
-    //m_voxelManager->Update();
+    m_voxelManager->Update();
 }
 
 void SceneManager::Draw()
 {
     m_skyRenderer->SetCamera(m_camera);
     m_skyRenderer->Draw();
+    m_voxelManager->Draw(m_camera);
     m_waterRenderer->SetCamera(m_camera);
     m_waterRenderer->Draw();
-    //m_voxelManager->Draw(m_camera);
 }

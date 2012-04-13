@@ -17,7 +17,7 @@ const TCHAR* WindowClass = _T("Nyx");
 const TCHAR* WindowName = _T("Nyx");
 const DWORD WindowStyle = WS_OVERLAPPEDWINDOW ^ WS_SIZEBOX;
 const size_t WindowWidth = 1024;
-const size_t WindowHeight = 1768;
+const size_t WindowHeight = 768;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -88,7 +88,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&lastTime));
 
         Camera camera;
-        float3 position = float3(0, 0, 0);
+        float3 position = float3(0, 2000.0f, 0);
         float roll = 0.0f,
               pitch = 0.0f;
         bool mouseDown;
@@ -96,10 +96,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
         float4x4 projectionMatrix = float4x4::PerspectiveProjection(XM_PI / 3.0f,
                                                                     static_cast<float>(WindowWidth) / static_cast<float>(WindowHeight),
-                                                                    0.1f,
+                                                                    1.0f,
                                                                     32000.0f);
         camera.SetProjectionMatrix(projectionMatrix);
-        camera.SetPosition(float3(0, 1200.0f, 0));
+        camera.SetPosition(float3(0, 0, 0));
 
         bool showGrid = false;
 
@@ -148,7 +148,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             }
             else
             {
-                speed = 1.0f;
+                speed = 1.5f;
             }
             if (GetAsyncKeyState('W')) {
                 position += camera.GetForwardVector() * (speed * ticks);

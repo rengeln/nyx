@@ -244,6 +244,16 @@ SkyRenderer::SkyRenderer(GraphicsDevice& graphicsDevice)
                                                               AttachPtr(m_shared->indexBuffer)));
 
         //
+        //  Load the sky texture.
+        //
+        D3DCHECK(D3DX11CreateShaderResourceViewFromFileA(&m_graphicsDevice.GetD3DDevice(),
+                                                         "assets/textures/sky.jpg",
+                                                         NULL,
+                                                         NULL,
+                                                         AttachPtr(m_shared->skyTextureView),
+                                                         NULL));
+
+        //
         //  Create the sampler state.
         //
         D3D11_SAMPLER_DESC samplerDesc =
