@@ -11,6 +11,8 @@
 //
 class Camera;
 class GraphicsDevice;
+class RenderContext;
+class SceneConstants;
 
 class LineRenderer : public boost::noncopyable
 {
@@ -56,14 +58,16 @@ public:
     void DrawBox(box3f, float4 color);
 
     //
-    //  Flushes drawing operations.
+    //  Flushes all queued drawing operations.
     //
-    void Flush();
-
+    //  Parameters:
+    //      [in] renderContext
+    //          Render context.
+    //      [in] sceneConstants
+    //          Scene constants.
     //
-    //  Sets the camera position.
-    //
-    void SetCamera(const Camera& camera);
+    void Flush(RenderContext& renderContext,
+               const SceneConstants& sceneConstants);
 
 private:
     //

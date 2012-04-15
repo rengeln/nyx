@@ -11,6 +11,8 @@
 //
 class Camera;
 class GraphicsDevice;
+class RenderContext;
+class SceneConstants;
 class VoxelMesh;
 
 //
@@ -34,11 +36,6 @@ public:
     ~VoxelRenderer();
 
     //
-    //  Sets the camera.
-    //
-    void SetCamera(const Camera& camera);
-
-    //
     //  Draws a voxel mesh.
     //
     //  In reality these functions enqueue the meshes for drawing, which occurs
@@ -51,7 +48,14 @@ public:
     //
     //  Flushes queued render ops.
     //
-    void Flush();
+    //  Parameters:
+    //      [in] renderContext
+    //          Render context.
+    //      [in] sceneConstants
+    //          Scene constants.
+    //
+    void Flush(RenderContext& renderContext,
+               const SceneConstants& sceneConstants);
 
 private:
     struct RenderOp
@@ -76,7 +80,6 @@ private:
         boost::intrusive_ptr<ID3D11VertexShader> vertexShader;
         boost::intrusive_ptr<ID3D11PixelShader> pixelShader;
         boost::intrusive_ptr<ID3D11InputLayout> inputLayout;
-        boost::intrusive_ptr<ID3D11RasterizerState> rasterizerState;
         boost::intrusive_ptr<ID3D11DepthStencilState> depthStencilState;
         boost::intrusive_ptr<ID3D11BlendState> blendState;
         std::array<boost::intrusive_ptr<ID3D11ShaderResourceView>, 8> textureViews;
@@ -89,6 +92,7 @@ private:
         float4x4 projectionViewMatrix;
         float4x4 worldMatrix;
         float4 alpha;
+        float4 clipPlane;
     };
     static std::weak_ptr<SharedProperties> m_sharedWeakPtr;
     std::shared_ptr<SharedProperties> m_shared;
@@ -98,7 +102,6 @@ private:
     std::vector<RenderOp> m_renderOps;
     std::vector<RenderOp> m_transparentRenderOps;
     std::vector<RenderOp> m_gapFillerRenderOps;
-    float3 m_cameraPosition;
 };
 
 #endif  // __NYX_VOXELRENDERER_H__

@@ -6,6 +6,8 @@
 #include "Prefix.h"
 #include "Camera.h"
 #include "GraphicsDevice.h"
+#include "RenderContext.h"
+#include "SceneManager.h"
 #include "VoxelMesh.h"
 #include "VoxelRenderer.h"
 
@@ -101,26 +103,10 @@ VoxelRenderer::VoxelRenderer(GraphicsDevice& graphicsDevice)
                                         NULL,
                                         AttachPtr(m_shared->pixelShader)));
     
-        //
-        //  Create the renderer state objects.
-        //
-        D3D11_RASTERIZER_DESC rasterizerDesc =
-        {
-            D3D11_FILL_SOLID,                                               //  FillMode
-            D3D11_CULL_BACK,                                                //  CullMode
-            FALSE,                                                          //  FrontCounterClockwise
-            0,                                                              //  DepthBias
-            0.0f,                                                           //  DepthBiasClamp
-            0.0f,                                                           //  SlopeScaledDepthBias
-            FALSE,                                                          //  DepthClipEnable
-            FALSE,                                                          //  ScissorEnable
-            FALSE,                                                          //  MultisampleEnable
-            FALSE                                                           //  AntialiasedLineEnable
-        };
-        D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateRasterizerState(
-                                        &rasterizerDesc,
-                                        AttachPtr(m_shared->rasterizerState)));
 
+        //
+        //  Create the state objects.
+        //
         D3D11_DEPTH_STENCIL_DESC depthStencilDesc = 
         {
             TRUE,                                                           //  DepthEnable
@@ -278,21 +264,13 @@ VoxelRenderer::~VoxelRenderer()
 {
 }
 
-void VoxelRenderer::SetCamera(const Camera& camera)
-{
-    m_constants.projectionViewMatrix = camera.GetCombinedMatrix();
-    m_cameraPosition = camera.GetPosition();
-}
-
 void VoxelRenderer::Draw(const VoxelMesh& geometry, float3 position)
 {
-    float3 diff = position - m_cameraPosition;
-    float dist2 = Dot(diff, diff);
     RenderOp op =
     {
         &geometry,
         position,
-        dist2,
+        0,
         1.0f,
         true
     };
@@ -301,13 +279,11 @@ void VoxelRenderer::Draw(const VoxelMesh& geometry, float3 position)
 
 void VoxelRenderer::DrawGapFiller(const VoxelMesh& geometry, float3 position)
 {
-    float3 diff = position - m_cameraPosition;
-    float dist2 = Dot(diff, diff);
     RenderOp op =
     {
         &geometry,
         position,
-        dist2,
+        0,
         1.0f,
         true
     };
@@ -316,21 +292,45 @@ void VoxelRenderer::DrawGapFiller(const VoxelMesh& geometry, float3 position)
 
 void VoxelRenderer::DrawTransparent(const VoxelMesh& geometry, float3 position, float alpha)
 {
-    float3 diff = position - m_cameraPosition;
-    float dist2 = Dot(diff, diff);
     RenderOp op =
     {
         &geometry,
         position,
-        dist2,
+        0,
         alpha,
         false
     };
     m_transparentRenderOps.push_back(op);    
 }
 
-void VoxelRenderer::Flush()
+void VoxelRenderer::Flush(RenderContext& renderContext,
+                          const SceneConstants& sceneConstants)
 {
+    //  Set up global shader constants
+    m_constants.projectionViewMatrix = sceneConstants.viewMatrix *
+                                       sceneConstants.projectionMatrix;
+    m_constants.clipPlane = sceneConstants.clipPlane;
+
+    //  Calculate camera distances for all queued render ops
+    float3 cameraPos = sceneConstants.cameraPos;
+    for (size_t i = 0; i < m_renderOps.size(); ++i)
+    {
+        float3 diff = m_renderOps[i].position - cameraPos;
+        m_renderOps[i].distance2 = Dot(diff, diff);
+    }
+    for (size_t i = 0; i < m_gapFillerRenderOps.size(); ++i)
+    {
+        float3 diff = m_gapFillerRenderOps[i].position - cameraPos;
+        m_gapFillerRenderOps[i].distance2 = Dot(diff, diff);
+    }
+    for (size_t i = 0; i < m_transparentRenderOps.size(); ++i)
+    {
+        float3 diff = m_transparentRenderOps[i].position - cameraPos;
+        m_transparentRenderOps[i].distance2 = Dot(diff, diff);
+    }
+    
+    //  Sort by camera distance (front to back for opaque render ops,
+    //  back to front for transparent)
     auto transparentSorter = [](const RenderOp& lhs, const RenderOp& rhs)
     {
         return lhs.distance2 > rhs.distance2;
@@ -339,28 +339,36 @@ void VoxelRenderer::Flush()
     {
         return lhs.distance2 < rhs.distance2;
     };
-    
     std::sort(m_renderOps.begin(), m_renderOps.end(), opaqueSorter);
     std::sort(m_gapFillerRenderOps.begin(), m_gapFillerRenderOps.end(), opaqueSorter);
     std::sort(m_transparentRenderOps.begin(), m_transparentRenderOps.end(), transparentSorter);
-    
+
+    //  Finally time to draw them
+    renderContext.PushDepthStencilState(m_shared->depthStencilState);
     for (size_t i = 0; i < m_renderOps.size(); i++)
     {
         Draw(m_renderOps[i]);
     }
     m_renderOps.clear();
+    renderContext.PopDepthStencilState();
 
+    renderContext.PushDepthStencilState(m_shared->fillGapsDepthStencilState);
     for (size_t i = 0; i < m_gapFillerRenderOps.size(); ++i)
     {
         Draw(m_gapFillerRenderOps[i]);
     }
     m_gapFillerRenderOps.clear();
+    renderContext.PopDepthStencilState();
 
+    renderContext.PushDepthStencilState(m_shared->transparentDepthStencilState);
+    renderContext.PushBlendState(m_shared->blendState);
     for (size_t i = 0; i < m_transparentRenderOps.size(); i++)
     {
         Draw(m_transparentRenderOps[i]);
     }
     m_transparentRenderOps.clear();
+    renderContext.PopBlendState();
+    renderContext.PopDepthStencilState();
 }
 
 void VoxelRenderer::Draw(const RenderOp& op)
@@ -416,28 +424,6 @@ void VoxelRenderer::Draw(const RenderOp& op)
     context.PSSetShaderResources(0, 7, shaderResourceViewPtrs);
     context.PSSetSamplers(0, 1, &samplerPtr);
 
-    context.RSSetState(m_shared->rasterizerState.get());
-
-    if (op.gapFiller)
-    {
-            context.OMSetDepthStencilState(m_shared->fillGapsDepthStencilState.get(), 0);
-    }
-    else
-    {
-        if (op.alpha == 1.0f)
-        {
-            context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
-        }
-        else
-        {
-            context.OMSetDepthStencilState(m_shared->transparentDepthStencilState.get(), 0);
-
-            const float blendFactor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-            context.OMSetBlendState(m_shared->blendState.get(), NULL, 0xFFFFFFFF);
-        }
-    }
-
     context.DrawIndexed(op.geometry->GetIndexCount(), 0, 0);  
 
-    context.OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
 }

@@ -9,9 +9,7 @@
 //
 //  Forward declarations.
 //
-class VoxelRenderer;
-class SkyRenderer;
-class LineRenderer;
+class RenderContext;
 
 //
 //  Encapsulates the graphics engine.
@@ -58,6 +56,11 @@ public:
     //
     ID3D10Include& GetD3DInclude();
 
+    //
+    //  Returns the primary RenderContext.
+    //
+    RenderContext& GetRenderContext();
+
 private:
     //
     //  Properties.
@@ -70,7 +73,7 @@ private:
     boost::intrusive_ptr<ID3D11RenderTargetView> m_renderTargetView;
     boost::intrusive_ptr<ID3D11DepthStencilView> m_depthStencilView;
     D3D_FEATURE_LEVEL m_featureLevel;
-    D3D11_VIEWPORT m_viewport;
+    std::unique_ptr<RenderContext> m_renderContext;
 };
 
 inline ID3D11Device& GraphicsDevice::GetD3DDevice()
@@ -83,6 +86,12 @@ inline ID3D11DeviceContext& GraphicsDevice::GetD3DContext()
 {
     assert(m_context);
     return *m_context;
+}
+
+inline RenderContext& GraphicsDevice::GetRenderContext()
+{
+    assert(m_renderContext);
+    return *m_renderContext;
 }
 
 #endif  // __NYX_GRAPHICSDEVICE_H__

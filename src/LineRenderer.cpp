@@ -6,7 +6,9 @@
 #include "Prefix.h"
 #include "Camera.h"
 #include "GraphicsDevice.h"
+#include "RenderContext.h"
 #include "LineRenderer.h"
+#include "SceneManager.h"
 
 std::weak_ptr<LineRenderer::SharedProperties> LineRenderer::m_sharedWeakPtr;
 
@@ -207,13 +209,12 @@ void LineRenderer::DrawBox(box3f box, float4 color)
     }
 }
 
-void LineRenderer::SetCamera(const Camera& camera)
+void LineRenderer::Flush(RenderContext& renderContext,
+                         const SceneConstants& sceneConstants)
 {
-    m_constants.projectionViewMatrix = camera.GetCombinedMatrix();
-}
+    m_constants.projectionViewMatrix = sceneConstants.projectionMatrix *
+                                       sceneConstants.viewMatrix;
 
-void LineRenderer::Flush()
-{
     ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
 
     if (!m_vertices.size())
@@ -290,10 +291,14 @@ void LineRenderer::Flush()
 
     context.PSSetShader(m_shared->pixelShader.get(), NULL, 0);
 
-    context.RSSetState(m_shared->rasterizerState.get());
-    context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
+    renderContext.PushRasterizerState(m_shared->rasterizerState);
+    renderContext.PushDepthStencilState(m_shared->depthStencilState);
 
     context.Draw(m_vertices.size(), 0);
+
+    renderContext.PopRasterizerState();
+    renderContext.PopDepthStencilState();
+
     m_vertices.clear();
 }
 

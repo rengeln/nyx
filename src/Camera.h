@@ -6,6 +6,8 @@
 #ifndef __NYX_CAMERA_H__
 #define __NYX_CAMERA_H__
 
+#include "Frustum.h"
+
 class Camera {
 public:
     //
@@ -69,28 +71,15 @@ public:
     const float3& GetRightVector() const;
 
     //
-    //  Intersection test with a bounding box.
+    //  Returns the camera's frustum.
     //
-    bool Intersects(const box3f& box) const;
+    const Frustum& GetFrustum() const;
 
 private:
     //
-    //  Updates the derived matrices if they are dirty.
+    //  Updates the derived members if dirty.
     //
     void Update() const;
-
-    //
-    //  Frustum planes.
-    //
-    enum FrustumPlane {
-        FrustumPlane_Left,
-        FrustumPlane_Bottom,
-        FrustumPlane_Near,
-        FrustumPlane_Right,
-        FrustumPlane_Top,
-        FrustumPlane_Far,
-        FrustumPlane_Max
-    };
 
     //
     //  Properties.
@@ -103,7 +92,7 @@ private:
     mutable float3 m_forwardVector;
     mutable float3 m_upVector;
     mutable float3 m_rightVector;
-    mutable float4 m_frustumPlanes[8];
+    mutable Frustum m_frustum;
     mutable bool m_dirty;
 };
 

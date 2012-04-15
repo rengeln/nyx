@@ -7,6 +7,7 @@ cbuffer SceneConstants {
 	row_major float4x4 ProjectionViewMatrix;
 	row_major float4x4 WorldMatrix;
     float Transparency;
+    float4 ClipPlane;
 };
 
 sampler MaterialSampler;

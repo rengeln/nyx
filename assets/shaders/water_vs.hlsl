@@ -12,6 +12,8 @@ struct VS_In {
 struct VS_Out {
 	float4 position : SV_Position;
     float3 worldPosition : TEXCOORD0;
+    float3 screenCoords : TEXCOORD1;
+    float3 viewVector : TEXCOORD2;
 };
 
 //
@@ -21,14 +23,14 @@ VS_Out main(VS_In input)
 {
     VS_Out output;
 
-    output.worldPosition = input.position;
-    output.worldPosition.x += CameraPosition.x;
-    output.worldPosition.z += CameraPosition.z;
-
-    input.position.x += CameraPosition.x;
-    input.position.z += CameraPosition.z;
-    input.position.y += Displacement(output.worldPosition.xz) * 2.0f;
-    output.position = mul(float4(input.position, 1.0f), mul(ViewMatrix, ProjectionMatrix));
-    
+    float3 pos = float3(input.position.x + CameraPos.x,
+                        input.position.y,
+                        input.position.z + CameraPos.z);
+    output.worldPosition = pos;
+    output.viewVector = normalize(pos - CameraPos);
+    output.position = mul(float4(pos, 1.0f), mul(ViewMatrix, ProjectionMatrix));
+    output.screenCoords.x = (1.0f + (output.position.x / output.position.w)) * 0.5f;
+    output.screenCoords.y = 1.0f - ((1.0f + (output.position.y / output.position.w)) * 0.5f);
+    output.screenCoords.z = output.position.z;
     return output; 
 }

@@ -7,6 +7,7 @@
 #include "GraphicsDevice.h"
 #include "LineRenderer.h"
 #include "Profiler.h"
+#include "RenderContext.h"
 #include "SkyRenderer.h"
 #include "VoxelRenderer.h"
 
@@ -128,9 +129,6 @@ GraphicsDevice::GraphicsDevice(HWND hwnd)
     //
     //  Set up the viewport.
     //
-    ID3D11RenderTargetView* renderTargetViewPtr = m_renderTargetView.get();
-    m_context->OMSetRenderTargets(1, &renderTargetViewPtr, m_depthStencilView.get());
-
     D3D11_VIEWPORT viewport =
     {
         0.0f,                                               //  TopLeftX
@@ -140,8 +138,14 @@ GraphicsDevice::GraphicsDevice(HWND hwnd)
         0.0f,                                               //  MinDepth
         1.0f                                                //  MaxDepth
     };
-    m_viewport = viewport;
-    m_context->RSSetViewports(1, &m_viewport);
+
+    //
+    //  Create the default render context.
+    //
+    m_renderContext.reset(new RenderContext(*this, m_context));
+    m_renderContext->PushRenderTarget(m_renderTargetView,
+                                      m_depthStencilView);
+    m_renderContext->PushViewport(viewport);
 }
 
 GraphicsDevice::~GraphicsDevice()
@@ -150,9 +154,6 @@ GraphicsDevice::~GraphicsDevice()
 
 void GraphicsDevice::Begin()
 {
-    ID3D11RenderTargetView* renderTargetViewPtr = m_renderTargetView.get();
-    m_context->OMSetRenderTargets(1, &renderTargetViewPtr, m_depthStencilView.get());
-    m_context->RSSetViewports(1, &m_viewport);
 }
 
 void GraphicsDevice::End()

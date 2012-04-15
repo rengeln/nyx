@@ -6,6 +6,8 @@
 #include "Prefix.h"
 #include "Camera.h"
 #include "GraphicsDevice.h"
+#include "RenderContext.h"
+#include "SceneManager.h"
 #include "SkyRenderer.h"
 
 const SkyRenderer::Vertex SkyRenderer::SkyboxVertices[24] =
@@ -295,19 +297,17 @@ SkyRenderer::~SkyRenderer()
 {
 }
 
-void SkyRenderer::SetCamera(const Camera& camera)
-{
-    m_constants.viewMatrix = camera.GetViewMatrix();
-    m_constants.projectionMatrix = camera.GetProjectionMatrix();
-}
-
-void SkyRenderer::Draw()
+void SkyRenderer::Draw(RenderContext& renderContext,
+                       const SceneConstants& sceneConstants)
 {
     ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
 
     //
     //  Update the constant buffer.
     //
+    m_constants.viewMatrix = sceneConstants.viewMatrix;
+    m_constants.projectionMatrix = sceneConstants.projectionMatrix;
+
     D3D11_MAPPED_SUBRESOURCE map;
     D3DCHECK(m_graphicsDevice.GetD3DContext().Map(m_constantBuffer.get(),   //  pResource
                                                  0,                         //  Subresource
@@ -344,8 +344,11 @@ void SkyRenderer::Draw()
     context.PSSetShaderResources(0, 1, shaderResourceViewPtrs);
     context.PSSetSamplers(0, 1, &samplerPtr);
 
-    context.RSSetState(m_shared->rasterizerState.get());
-    context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
+    renderContext.PushRasterizerState(m_shared->rasterizerState);
+    renderContext.PushDepthStencilState(m_shared->depthStencilState);
 
     context.DrawIndexed(36, 0, 0);
+
+    renderContext.PopRasterizerState();
+    renderContext.PopDepthStencilState();
 }

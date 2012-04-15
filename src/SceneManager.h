@@ -7,14 +7,30 @@
 #define __NYX_SCENEMANAGER_H__
 
 #include "Camera.h"
+#include "Frustum.h"
 
 //
 //  Forward declarations.
 //
 class GraphicsDevice;
 class SkyRenderer;
+class RenderContext;
 class VoxelManager;
-class WaterRenderer;
+class WaterManager;
+
+//
+//  Global rendering constants.
+//
+class SceneConstants
+{
+public:
+    float4x4 viewMatrix;
+    float4x4 projectionMatrix;
+    Frustum frustum;
+    float4 clipPlane;
+    float3 cameraPos;
+    bool lowDetail;
+};
 
 class SceneManager : public boost::noncopyable
 {
@@ -49,9 +65,15 @@ public:
     void Draw();
 
     //
-    //  Returns the VoxelManager.
+    //  Draws the scene for an individual render stage.
     //
-    VoxelManager& GetVoxelManager();
+    void DrawStage(RenderContext& renderContext,
+                   const SceneConstants& sceneConstants);
+
+    //
+    //  Returns the GraphicsDevice instance.
+    //
+    GraphicsDevice& GetGraphicsDevice();
 
 private:
     //
@@ -60,14 +82,14 @@ private:
     GraphicsDevice& m_graphicsDevice;
     std::unique_ptr<VoxelManager> m_voxelManager;
     std::unique_ptr<SkyRenderer> m_skyRenderer;
-    std::unique_ptr<WaterRenderer> m_waterRenderer;
+    std::unique_ptr<WaterManager> m_waterManager;
+    
     Camera m_camera;
 };
 
-inline VoxelManager& SceneManager::GetVoxelManager()
+inline GraphicsDevice& SceneManager::GetGraphicsDevice()
 {
-    assert(m_voxelManager);
-    return *m_voxelManager;
+    return m_graphicsDevice;
 }
 
 #endif  //  __NYX_SCENEMANGER_H__

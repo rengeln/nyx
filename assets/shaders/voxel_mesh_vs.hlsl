@@ -17,6 +17,7 @@ struct VS_Out {
 	float3 worldPos : TEXCOORD0;
 	float4 materialWeights[2] : TEXCOORD1;
     float fog : TEXCOORD3;
+    float clip : SV_ClipDistance;
 };
 
 //
@@ -39,7 +40,7 @@ VS_Out main(VS_In input)
 								 (input.normal >> 16) & 0xFF, 
 								  input.normal & 0xFF);
 	output.normal = normalize((float3(unpackedNormal) - 127.0f) / 128.0f);
-	output.worldPos = input.position.xyz;
+	output.worldPos = mul(float4(input.position.xyz, 1.0f), WorldMatrix);
 	output.materialWeights[0] = float4(
 		float((input.material.x >> 24) & 0xFF) / 255.0f,
 		float((input.material.x >> 16) & 0xFF) / 255.0f,
@@ -51,5 +52,8 @@ VS_Out main(VS_In input)
 		float((input.material.y >> 8) & 0xFF) / 255.0f,
 		float((input.material.y >> 0) & 0xFF) / 255.0f);
     output.fog = 0;
+    output.clip = dot(ClipPlane, float4(output.worldPos, 1.0f));
+    //output.clip = output.worldPos.y - 1000.0f;
+    //output.clip = 1.0f;
 	return output; 
 }

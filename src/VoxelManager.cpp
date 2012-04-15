@@ -8,6 +8,7 @@
 #include "GraphicsDevice.h"
 #include "LineRenderer.h"
 #include "Profiler.h"
+#include "SceneManager.h"
 #include "VoxelMesh.h"
 #include "VoxelManager.h"
 #include "VoxelProcessor.h"
@@ -88,7 +89,7 @@ void VoxelManager::SetCamera(const Camera& camera)
         {
             for (int16_t z = indexZ - visualRadius; z <= indexZ + visualRadius; z++)
             {
-                for (int16_t y = 0; y < 4; ++y)
+                for (int16_t y = -1; y < 3; ++y)
                 {
                     float3 pos(static_cast<float>(x) * m_nodeDimensions[0].x,
                                0,
@@ -122,7 +123,6 @@ void VoxelManager::SetCamera(const Camera& camera)
         UpdateNode(*j->second, camera);
         if (j->second->distance > (m_radius * 1.25f))
         {
-            OutputDebugStringA("Deleting node!!!\n");
             m_nodeMap.erase(j);
         }
     }
@@ -138,31 +138,31 @@ void VoxelManager::Update()
     profiler.End();
 }
 
-void VoxelManager::Draw(const Camera& camera)
+void VoxelManager::Draw(RenderContext& renderContext,
+                        const SceneConstants& sceneConstants)
 {
     static Profiler profiler("VoxelManager::Draw()");
     profiler.Begin();
-    m_voxelRenderer->SetCamera(camera);
     for (auto i = m_nodeMap.begin(); i != m_nodeMap.end(); i++)
     {
-        CalculateNodeVisibility(*i->second, camera);
-        DrawNode(*i->second);
+        CalculateNodeVisibility(*i->second, sceneConstants.frustum);
+        DrawNode(*i->second, !sceneConstants.lowDetail);
     }
-    m_voxelRenderer->Flush();
+    m_voxelRenderer->Flush(renderContext, sceneConstants);
     profiler.End();
 }
 
-void VoxelManager::DrawBoundingBoxes(const Camera& camera)
+void VoxelManager::DrawBoundingBoxes(RenderContext& renderContext,
+                                     const SceneConstants& sceneConstants)
 {
     static Profiler profiler("VoxelManager::DrawBoundingBoxes()");
     profiler.Begin();
-    m_lineRenderer->SetCamera(camera);
     for (auto i = m_nodeMap.begin(); i != m_nodeMap.end(); i++)
     {
-        CalculateNodeVisibility(*i->second, camera);
+        CalculateNodeVisibility(*i->second, sceneConstants.frustum);
         DrawNodeBoundingBox(*i->second);
     }
-    m_lineRenderer->Flush();
+    m_lineRenderer->Flush(renderContext, sceneConstants);
     profiler.End();
 }
 
@@ -313,25 +313,25 @@ void VoxelManager::UpdateNode(Node& node,
     }
 }
 
-void VoxelManager::CalculateNodeVisibility(Node& node, const Camera& camera)
+void VoxelManager::CalculateNodeVisibility(Node& node, const Frustum& frustum, bool recursive)
 {
     box3f boundingBox(node.position, node.position + node.size);
-    node.visible = camera.Intersects(boundingBox);
-    if (node.visible && node.children[0])
+    node.visible = frustum.Intersects(boundingBox);
+    if (recursive && node.visible && node.children[0])
     {
         for (size_t i = 0; i < 8; i++)
         {
-            CalculateNodeVisibility(*node.children[i], camera);
+            CalculateNodeVisibility(*node.children[i], frustum);
         }
     }
 }
 
-void VoxelManager::DrawNode(Node& node)
+void VoxelManager::DrawNode(Node& node, bool recursive)
 {
     if (node.geometry->IsReady() && node.visible)
     {
-        bool mustDraw = false;
-        if (node.children[0])
+        bool mustDraw = !recursive;
+        if (!mustDraw && node.children[0])
         {
             for (size_t i = 0; i < 8; ++i)
             {
@@ -364,7 +364,7 @@ void VoxelManager::DrawNode(Node& node)
             }
             for (size_t i = 0; i < 8; ++i)
             {
-                DrawNode(*node.children[i]);
+                DrawNode(*node.children[i], recursive);
             }
         }
     }

@@ -165,15 +165,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             camera.SetPosition(position);
             sceneManager.Update();
             sceneManager.SetCamera(camera);
-
-            graphicsDevice.Begin();
             sceneManager.Draw();
-
-            if (showGrid)
-            {
-                sceneManager.GetVoxelManager().DrawBoundingBoxes(camera);
-            }
-            graphicsDevice.End();
         }
     }
 	catch (std::exception& e)

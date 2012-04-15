@@ -6,7 +6,9 @@
 #include "Prefix.h"
 #include "Camera.h"
 #include "GraphicsDevice.h"
+#include "RenderContext.h"
 #include "Noise.h"
+#include "SceneManager.h"
 #include "WaterRenderer.h"
 
 std::weak_ptr<WaterRenderer::SharedProperties> WaterRenderer::m_sharedWeakPtr;
@@ -136,7 +138,7 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
             FALSE,                                                          //  AlphaToCoverageEnable
             FALSE,                                                          //  IndependentBlendEnable
             {{                                                              //  RenderTarget[0]
-                FALSE,                                                       //      BlendEnable
+                TRUE,                                                       //      BlendEnable
                 D3D11_BLEND_SRC_ALPHA,                                      //      SrcBlend
                 D3D11_BLEND_INV_SRC_ALPHA,                                  //      DestBlend
                 D3D11_BLEND_OP_ADD,                                         //      BlendOp
@@ -198,50 +200,12 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         //
         //  Create the noise texture.
         //
-        std::vector<float> noiseData(256 * 256);
-        Noise n;
-        n.Fill(noiseData.data(), 256, 256, 1, 0.1f, 0.1f, 1.0f);
-
-        D3D11_SUBRESOURCE_DATA noiseTextureData =
-        {
-            noiseData.data(),                                               //  pSysMem
-            sizeof(float) * 256,                                            //  SysMemPitch
-            0,                                                              //  SysMemSlicePitch
-        };
-        D3D11_TEXTURE2D_DESC noiseTextureDesc =
-        {
-            256,                                                            //  Width
-            256,                                                            //  Height
-            1,                                                              //  MipLevels
-            1,                                                              //  ArraySize
-            DXGI_FORMAT_R32_FLOAT,                                          //  Format
-            {                                                               //  SampleDesc
-                1,                                                          //      Count
-                0                                                           //      Quality
-            },
-            D3D11_USAGE_IMMUTABLE,                                          //  Usage
-            D3D11_BIND_SHADER_RESOURCE,                                     //  BindFlags
-            0,                                                              //  CPUAccessFlags
-            0                                                               //  MiscFlags
-        };
-        boost::intrusive_ptr<ID3D11Texture2D> noiseTexture;
-        D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateTexture2D(&noiseTextureDesc,
-                                                                 &noiseTextureData,
-                                                                 AttachPtr(noiseTexture)));
-
-        D3D11_SHADER_RESOURCE_VIEW_DESC noiseSRVDesc =
-        {
-            DXGI_FORMAT_R32_FLOAT,                                          //  Format
-            D3D11_SRV_DIMENSION_TEXTURE2D,                                  //  ViewDimension
-            {                                                               //  Texture2D
-                0,                                                          //      MostDetailedMip
-                -1                                                          //      MipLevels
-            }
-        };
-        D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateShaderResourceView(noiseTexture.get(),
-                                                                          &noiseSRVDesc,
-                                                                          AttachPtr(m_shared->noiseTextureView)));
-
+        D3DCHECK(D3DX11CreateShaderResourceViewFromFileA(&m_graphicsDevice.GetD3DDevice(),
+                                                         "assets/textures/waves2.dds",
+                                                         NULL,
+                                                         NULL,
+                                                         AttachPtr(m_shared->noiseTextureView),
+                                                         NULL));
         //
         //  Create the sampler for the noise texture.
         //
@@ -260,7 +224,7 @@ WaterRenderer::WaterRenderer(GraphicsDevice& graphicsDevice)
         };
         D3DCHECK(m_graphicsDevice.GetD3DDevice().CreateSamplerState(&noiseSamplerDesc,
                                                                     AttachPtr(m_shared->noiseSampler)));    
-                                                                 
+                                                               
     }
 
     //
@@ -289,13 +253,13 @@ WaterRenderer::~WaterRenderer()
 void WaterRenderer::GenerateRadialGrid(std::vector<Vertex>& vertices,
                                        std::vector<uint16_t>& indices)
 {
-    const size_t M = 256, N = 64;
-    const float MinRadius = 1.0f, DeltaRadius = 0.05f;
+    const size_t M = 32, N = 64;
+    const float MinRadius = 1.0f, DeltaRadius = 0.2f;
 
     vertices.reserve(1 + (M * N));
 
     Vertex c;
-    c.xyz = float3(0, 1000.0f, 0);
+    c.xyz = float3(0, 0, 0);
     vertices.push_back(c);
 
     //  indices for the inner ring
@@ -312,7 +276,7 @@ void WaterRenderer::GenerateRadialGrid(std::vector<Vertex>& vertices,
             float r = MinRadius + (DeltaRadius * (i * i * i));
             Vertex v;
             v.xyz = float3(r * cos(2.0f * XM_PI * j / M),
-                           1000.0f,
+                           0,
                            r * sin(2.0f * XM_PI * j / M));
             vertices.push_back(v);
 
@@ -325,25 +289,19 @@ void WaterRenderer::GenerateRadialGrid(std::vector<Vertex>& vertices,
     }
 }
 
-
-void WaterRenderer::SetCamera(const Camera& camera)
-{
-    m_shaderConstants.viewMatrix = camera.GetViewMatrix();
-    m_shaderConstants.projectionMatrix = camera.GetProjectionMatrix();
-    m_shaderConstants.cameraPosition = camera.GetPosition();
-}
-
-void WaterRenderer::Draw()
+void WaterRenderer::Draw(RenderContext& renderContext,
+                         const SceneConstants& sceneConstants,
+                         ID3D11ShaderResourceView& reflectionSrv)
 {
     ID3D11DeviceContext& context = m_graphicsDevice.GetD3DContext();
-
-    m_time += 0.1f;
-    m_shaderConstants.offset.x = m_time * 1.35f;
-    //m_shaderConstants.offset = float4::Replicate(0);
     
     //
     //  Update the constant buffer.
     //
+    m_shaderConstants.viewMatrix = sceneConstants.viewMatrix;
+    m_shaderConstants.projectionMatrix = sceneConstants.projectionMatrix;
+    m_shaderConstants.cameraPos = sceneConstants.cameraPos;
+    
     D3D11_MAPPED_SUBRESOURCE map;
     D3DCHECK(m_graphicsDevice.GetD3DContext().Map(m_constantBuffer.get(),   //  pResource
                                                  0,                         //  Subresource
@@ -361,7 +319,8 @@ void WaterRenderer::Draw()
            stride = sizeof(Vertex);
     ID3D11ShaderResourceView* srvs[] =
     {
-        m_shared->noiseTextureView.get()
+        m_shared->noiseTextureView.get(),
+        &reflectionSrv
     };
     ID3D11SamplerState* samplers[] =
     {
@@ -385,13 +344,12 @@ void WaterRenderer::Draw()
     context.PSSetShaderResources(0, sizeof(srvs) / sizeof(srvs[0]), srvs);
     context.PSSetSamplers(0, sizeof(samplers) / sizeof(samplers[0]), samplers);
     
-    context.RSSetState(m_shared->rasterizerState.get());
-
-    const float blendFactor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    context.OMSetBlendState(m_shared->blendState.get(), NULL, 0xFFFFFFFF);
-    context.OMSetDepthStencilState(m_shared->depthStencilState.get(), 0);
+    renderContext.PushRasterizerState(m_shared->rasterizerState);
+    renderContext.PushBlendState(m_shared->blendState);
     
     context.DrawIndexed(m_shared->indexCount, 0, 0);
 
-    context.OMSetBlendState(NULL, NULL, 0xFFFFFFFF);
+    renderContext.PopBlendState();
+    renderContext.PopRasterizerState();
 }
+

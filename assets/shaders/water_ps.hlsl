@@ -12,29 +12,36 @@ struct PS_Out {
 struct PS_In {
 	float4 position : SV_Position;
     float3 worldPosition : TEXCOORD0;
+    float3 screenCoords : TEXCOORD1;
+    float3 viewVector : TEXCOORD2;
 };
 
-//
-//  Pass-through pixel shader for rendering lines.
-//
+float Fresnel(float NdotL, float fresnelBias, float fresnelPow)
+
+{
+
+  float facing = (1.0 - NdotL);
+
+  return max(fresnelBias +
+
+             (1.0 - fresnelBias) * pow(facing, fresnelPow), 0.0);
+
+}
+
 PS_Out main(PS_In input)
 {
     PS_Out output;
 
-    //  Calculate the slope in the x and z directions to produce a normal
-    float d = Displacement(input.worldPosition.xz);
-    float dx = Displacement(float2(input.worldPosition.x + 10.0f,
-                                   input.worldPosition.z));
-    float dz = Displacement(float2(input.worldPosition.x,
-                                   input.worldPosition.z + 10.0f));
-    float3 normal = normalize(float3(d - dx, 0.1f, d - dz));
-    //output.color = float4(normal, 1.0f);
-    
-    output.color = pow(pow(saturate(dot(R, i.sun)),sun_shininess)*float3(1.2, 0.4, 0.1), 1/2.2);
-    /*
-    float d = Displacement(input.worldPosition.xz);
-    output.color = float4(d, 0, 0, 1.0f);
-    */
-    //output.color = float4(0.0f, 0.1f, 0.3f, 0.7f);
+    float3 bump = NormalTexture.Sample(LinearSampler, input.worldPosition.xz / 917.0f).xzy * 0.15 +
+                  NormalTexture.Sample(LinearSampler, input.worldPosition.xz / 591.0f).xzy * 0.35 +
+                  NormalTexture.Sample(LinearSampler, input.worldPosition.xz / 256.0f).xzy * 0.5;
+    float3 normal = normalize(float3(0, 0.5f, 0) + (float3(-1.0f, -1.0f, -1.0f) + (bump * 2)));
+    float3 reflectionVector = reflect(input.viewVector, normal);
+    float fresnel = 0.2f + 0.8f * pow(1.0f - dot(normal, reflectionVector), 2.0f);
+    float3 sun = 1.0f * pow(saturate(dot(reflectionVector, LightDirection)), 3.0f);
+
+    float3 reflColor = ReflectionTexture.Sample(LinearSampler, input.screenCoords.xy + normal.xz * 0.05f);
+
+    output.color = float4(lerp(reflColor + sun, float3(0, 0.2f, 0.3f), fresnel), 0.8f);
     return output;
 }

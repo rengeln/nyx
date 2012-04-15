@@ -71,6 +71,12 @@ const float3& Camera::GetRightVector() const
     return m_rightVector;
 }
 
+const Frustum& Camera::GetFrustum() const
+{
+    Update();
+    return m_frustum;
+}
+
 void Camera::Update() const
 {
     if (m_dirty) {
@@ -86,57 +92,8 @@ void Camera::Update() const
         m_upVector = rotationMatrix * float3(0.0f, 1.0f, 0.0f);
 
         //  Extract frustum planes.
-        float4x4& m = m_combinedMatrix;
-        m_frustumPlanes[FrustumPlane_Right].x = m[0][3] + m[0][0];
-        m_frustumPlanes[FrustumPlane_Right].y = m[1][3] + m[1][0];
-        m_frustumPlanes[FrustumPlane_Right].z = m[2][3] + m[2][0];
-        m_frustumPlanes[FrustumPlane_Right].w = m[3][3] + m[3][0];
-   
-        m_frustumPlanes[FrustumPlane_Left].x = m[0][3] - m[0][0];
-        m_frustumPlanes[FrustumPlane_Left].y = m[1][3] - m[1][0];
-        m_frustumPlanes[FrustumPlane_Left].z = m[2][3] - m[2][0];
-        m_frustumPlanes[FrustumPlane_Left].w = m[3][3] - m[3][0];
-
-        m_frustumPlanes[FrustumPlane_Top].x = m[0][3] - m[0][1];
-        m_frustumPlanes[FrustumPlane_Top].y = m[1][3] - m[1][1];
-        m_frustumPlanes[FrustumPlane_Top].z = m[2][3] - m[2][1];
-        m_frustumPlanes[FrustumPlane_Top].w = m[3][3] - m[3][1];
-
-        m_frustumPlanes[FrustumPlane_Bottom].x = m[0][3] + m[0][1];
-        m_frustumPlanes[FrustumPlane_Bottom].y = m[1][3] + m[1][1];
-        m_frustumPlanes[FrustumPlane_Bottom].z = m[2][3] + m[2][1];
-        m_frustumPlanes[FrustumPlane_Bottom].w = m[3][3] + m[3][1];
-
-        m_frustumPlanes[FrustumPlane_Far].x = m[0][2];
-        m_frustumPlanes[FrustumPlane_Far].y = m[1][2];
-        m_frustumPlanes[FrustumPlane_Far].z = m[2][2];
-        m_frustumPlanes[FrustumPlane_Far].w = m[3][2];
-
-        m_frustumPlanes[FrustumPlane_Near].x = m[0][3] - m[0][2];
-        m_frustumPlanes[FrustumPlane_Near].y = m[1][3] - m[1][2];
-        m_frustumPlanes[FrustumPlane_Near].z = m[2][3] - m[2][2];
-        m_frustumPlanes[FrustumPlane_Near].w = m[3][3] - m[3][2];
+        m_frustum = m_combinedMatrix;
 
         m_dirty = false;
     }
 }
-
-bool Camera::Intersects(const box3f& box) const
-{
-    for (size_t i = 0; i < FrustumPlane_Max; ++i) 
-    {
-        XMFLOAT3 v;
-        v.x = m_frustumPlanes[i].x >= 0 ? box.second.x : box.first.x;
-        v.y = m_frustumPlanes[i].y >= 0 ? box.second.y : box.first.y;
-        v.z = m_frustumPlanes[i].z >= 0 ? box.second.z : box.first.z;
-
-        XMVECTOR _v = XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(&v)),
-                 _p = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(&m_frustumPlanes[i]));
-        if (XMVectorGetX(XMPlaneDotCoord(_p, _v)) < 0.0f)
-        {
-            return false;
-        }
-    }
-    return true;
-}
-

@@ -11,8 +11,12 @@
 //
 //  Forward declarations.
 //
+class LineRenderer;
 class GraphicsDevice;
+class RenderContext;
+class SceneConstants;
 class VoxelProcessor;
+class VoxelRenderer;
 class VoxelMesh;
 
 class VoxelManager : public boost::noncopyable
@@ -47,22 +51,31 @@ public:
     void Update();
 
     //
-    //  Updates the node tree based on a camera position.
+    //  Updates the voxel world based on the camera position.
     //
-    void SetCamera(const Camera& camea);
+    void SetCamera(const Camera& camera);
 
     //
     //  Draws the voxel world.
     //
-    //  This doesn't need to be the same camera that SetCamera() was called
-    //  with, although if it is very far away then artifacts will likely result.
+    //  Parameters:
+    //      [in] renderContext
+    //          Render context.
+    //      [in] sceneConstants
+    //          Scene constants.
     //
-    void Draw(const Camera& camera);
+    void Draw(RenderContext& renderContext, const SceneConstants& sceneConstants);
 
     //
     //  Draws the voxel bounding boxes.
     //
-    void DrawBoundingBoxes(const Camera& camera);
+    //  Parameters:
+    //      [in] renderContext
+    //          Render context.
+    //      [in] sceneConstants
+    //          Scene constants.
+    //
+    void DrawBoundingBoxes(RenderContext& renderContext, const SceneConstants& sceneConstants);
 
     //
     //  Processes pending nodes.
@@ -106,7 +119,7 @@ private:
     //
     //  Calculates a node's visibility.
     //
-    void CalculateNodeVisibility(Node& node, const Camera& camera);
+    void CalculateNodeVisibility(Node& node, const Frustum& frustum, bool recursive = true);
 
     //
     //  Splits a node.
@@ -121,7 +134,7 @@ private:
     //
     //  Draws a node.
     //
-    void DrawNode(Node& node);
+    void DrawNode(Node& node, bool recursive);
     void DrawNodeBoundingBox(Node& node);
 
     //

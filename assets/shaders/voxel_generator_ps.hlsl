@@ -82,7 +82,7 @@ Output main(Input input)
     //float caveTerm2 = (1.0f + sin((pos.x / 127.0f) + (pos.z / 131.1f) + simplex_noise_range(pos / 539.0f, 0.0f, 1.0f) * 4.0f)) / 2.0f;
     //float cave = smooth_snap(caveTerm1 * caveTerm2 * saturate(mountain1 + mountain2), 12.0f);
 
-    float height = 1100.0f + (ocean * -1000.0f) + (mountain1 * valley * (mountainHeight * 2000.0f)) + (mountain2 * valley * (mountainHeight * 2000.0f)) + (river * -200.0f) +  (feature * 150.0f);
+    float height = 100.0f + (ocean * -1000.0f) + (mountain1 * valley * (mountainHeight * 2000.0f)) + (mountain2 * valley * (mountainHeight * 2000.0f)) + (river * -200.0f) +  (feature * 150.0f);
     output.density = -(pos.y - height);
 
     float detailTerm1 = simplex_noise_range(pos / 531.1f, 0.0f, 1.0f);

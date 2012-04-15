@@ -6,6 +6,8 @@
 #ifndef __NYX_WATERRENDERER_H__
 #define __NYX_WATERRENDERER_H__
 
+class SceneConstants;
+
 //
 //  Renders the water plane.
 //
@@ -23,14 +25,19 @@ public:
     ~WaterRenderer();
 
     //
-    //  Sets the camera position.
-    //
-    void SetCamera(const Camera& camera);
-
-    //
     //  Draws the water plane.
     //
-    void Draw();
+    //  Parameters:
+    //      [in] renderContext
+    //          Render context.
+    //      [in] sceneConstants
+    //          Scene constants.
+    //      [in] reflectionSrv
+    //          SRV for the reflection texture.
+    //
+    void Draw(RenderContext& renderContext,
+              const SceneConstants& sceneConstants, 
+              ID3D11ShaderResourceView& reflectionSrv);
 
 private:
     struct Vertex
@@ -66,14 +73,14 @@ private:
         boost::intrusive_ptr<ID3D11BlendState> blendState;
         boost::intrusive_ptr<ID3D11ShaderResourceView> noiseTextureView;
         boost::intrusive_ptr<ID3D11SamplerState> noiseSampler;
+        boost::intrusive_ptr<ID3D11SamplerState> reflectionSampler;
         uint32_t indexCount;
     };
     struct ShaderConstants
     {
         float4x4 viewMatrix;
         float4x4 projectionMatrix;
-        float4   cameraPosition;
-        float4   offset;
+        float4 cameraPos;
     };
     static std::weak_ptr<SharedProperties> m_sharedWeakPtr;
     std::shared_ptr<SharedProperties> m_shared;

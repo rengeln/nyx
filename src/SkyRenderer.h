@@ -11,6 +11,7 @@
 //
 class Camera;
 class GraphicsDevice;
+class SceneConstants;
 
 //
 //  Renders the skybox.
@@ -33,14 +34,16 @@ public:
     ~SkyRenderer();
 
     //
-    //  Sets the camera position.
-    //
-    void SetCamera(const Camera& camera);
-
-    //
     //  Draws the skybox.
     //
-    void Draw();
+    //  Parameters:
+    //      [in] renderContext
+    //          Render context.
+    //      [in] sceneContants
+    //          Scene constants.
+    //
+    void Draw(RenderContext& renderContext,
+              const SceneConstants& sceneConstants);
 
 private:
     //
